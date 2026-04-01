@@ -65,7 +65,7 @@ window.addEventListener("keyup", (e) => {
         keyboard.SPACE = false;
     }
 
-    if (e.keyCode == 68) {
+    if (e.keyCode == 80) {
         keyboard.D = false;
     }
 });
