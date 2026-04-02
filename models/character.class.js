@@ -1,9 +1,11 @@
-class Character extends MovableObject {
-
+class Character extends MovableObject{
+    x = 100;
+    y = 170;
+    widht = 100;
     height = 250;
-    y = 80
-    speed = 10;
+    offset = { top: 60, bottom: 10, left: 25, right: 25 };
     IMAGES_WALKING = [
+        
         'img/2.Secuencias_Personaje-Pepe-corrección/2.Secuencia_caminata/W-21.png',
         'img/2.Secuencias_Personaje-Pepe-corrección/2.Secuencia_caminata/W-22.png',
         'img/2.Secuencias_Personaje-Pepe-corrección/2.Secuencia_caminata/W-23.png',
