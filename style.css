@@ -1,9 +1,410 @@
 body {
     display: flex;
     flex-direction: column;
+    justify-content: center;
     align-items: center;
+    min-height: 100vh;
+    margin: 0;
+    padding: 0;
+    background-image: url("./assets/img/5_background/mostafaelturkey36-oasis-4701493.jpg");
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center;
+}
+
+h1 {
+    margin: 0;
+}
+
+button {
+    cursor: pointer;
+}
+
+.stage-shell {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+    position: relative;
 }
 
 canvas {
-    background-color: black;
+    display: block;
+    width: 100%;
+    max-width: 720px;
+    height: 480px;
+}
+
+.touch-panel {
+    margin-top: 12px;
+    width: 100%;
+    max-width: 720px;
+    padding: 0 16px;
+    box-sizing: border-box;
+    display: none;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    user-select: none;
+    touch-action: manipulation;
+}
+
+.home-action {
+    position: fixed;
+    top: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 20;
+    height: calc(30px + 20px);
+    width: calc(250px - 50px);
+    border: none;
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: 21px;
+    font-weight: 500;
+    color: rgba(255, 253, 253, 0.822);
+    background: rgba(122, 122, 122, 0.6);
+    display: none;
+}
+
+.home-action:hover {
+    background: rgba(187, 186, 185, 0.92);
+}
+
+.retry-action {
+    display: none;
+    position: fixed;
+    height: calc(30px + 20px);
+    width: calc(150px + 50px);
+    border-radius: 8px;
+    bottom: 40px;
+    left: 50%;
+    transform: translateX(-50%);
+    border: none;
+    padding: 8px 12px;
+    font-size: 21px;
+    font-weight: 500;
+    color: rgba(255, 253, 253, 0.822);
+    background: rgba(122, 122, 122, 0.6);
+    z-index: 20;
+}
+
+.retry-action:hover {
+    background: rgba(187, 186, 185, 0.92);
+}
+
+body.touch-device .touch-panel {
+    display: flex;
+}
+
+.touch-row {
+    display: flex;
+    gap: 30px;
+}
+
+.touch-trigger {
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    border: none;
+    font-size: 24px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #ffffff8f;
+    touch-action: none;
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+    -webkit-user-drag: none;
+}
+
+.touch-trigger img {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    border: none;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transform: rotate(45deg);
+    pointer-events: none;
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+    -webkit-user-drag: none;
+}
+
+#orientationOverlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.85);
+    color: #ffffff;
+    display: none;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 16px;
+    z-index: 9999;
+}
+
+.orientation-text {
+    max-width: 480px;
+    font-size: 1.2rem;
+}
+
+@media (min-width: 1440px) and (max-width: 1920px) and (pointer: coarse) {
+    .touch-panel {
+        display: none;
+    }
+
+    .stage-shell {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+        height: 100%;
+        max-width: 720px;
+    }
+
+    .home-action {
+        position: fixed;
+        top: 24px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 20;
+        height: calc(30px + 20px);
+        width: calc(250px + 50px);
+        border: none;
+        border-radius: 8px;
+        padding: 8px 12px;
+        font-size: 21px;
+        font-weight: 500;
+        color: rgba(255, 253, 253, 0.822);
+        background: rgba(122, 122, 122, 0.6);
+        display: none;
+    }
+
+    .home-action:hover {
+        background: rgba(187, 186, 185, 0.92);
+    }
+
+    .retry-action {
+        display: none;
+        position: fixed;
+        height: calc(30px + 20px);
+        width: calc(150px + 50px);
+        border-radius: 8px;
+        bottom: 40px;
+        left: 50%;
+        transform: translateX(-50%);
+        border: none;
+        padding: 8px 12px;
+        font-size: 21px;
+        font-weight: 500;
+        color: rgba(255, 253, 253, 0.822);
+        background: rgba(122, 122, 122, 0.6);
+        z-index: 20;
+    }
+
+    .retry-action:hover {
+        background: rgba(187, 186, 185, 0.92);
+    }
+}
+
+@media only screen and (max-width: 1440px) and (pointer: coarse) {
+    canvas {
+        height: 100vh;
+        width: 100vw;
+    }
+
+    .legal-page {
+        width: min(760px, 90%);
+        padding: 20px;
+    }
+
+    .legal-card {
+        padding: 20px;
+        border-radius: 18px;
+        margin: 0;
+        padding: 20px;
+    }
+
+    .stage-shell h1 {
+        display: none;
+    }
+
+    .stage-shell {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+        height: 100%;
+        width: 100vw;
+    }
+
+    .touch-panel {
+        display: flex;
+        position: absolute;
+        bottom: 17px;
+        max-width: 99vw;
+    }
+
+    .home-action {
+        position: fixed;
+        top: 24px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 20;
+        height: calc(30px + 20px);
+        width: 100%;
+        max-width: calc(150px + 50px);
+        border: none;
+        border-radius: 8px;
+        padding: 8px 12px;
+        font-size: 21px;
+        font-weight: 500;
+        color: rgba(255, 253, 253, 0.822);
+        background: rgba(122, 122, 122, 0.6);
+        display: none;
+    }
+
+    .retry-action {
+        display: none;
+        position: fixed;
+        height: calc(30px + 20px);
+        width: 100%;
+        max-width: calc(150px + 50px);
+        border-radius: 8px;
+        top: calc(5% + 50px);
+        right: calc(50% - 100px);
+        border: none;
+        padding: 8px 12px;
+        font-size: 21px;
+        font-weight: 500;
+        color: rgba(255, 253, 253, 0.822);
+        background: rgba(122, 122, 122, 0.6);
+        z-index: 20;
+    }
+}
+
+@media only screen and (max-width: 768px) and (pointer: coarse) {
+    canvas {
+        width: 100vw;
+    }
+
+    .legal-page {
+        width: min(760px, 90%);
+        padding: 20px;
+    }
+
+    .legal-card {
+        padding: 20px;
+        border-radius: 18px;
+        margin: 0;
+    }
+
+    .stage-shell h1 {
+        display: none;
+    }
+
+    .stage-shell {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+        height: 100%;
+        width: 100vw;
+    }
+
+    .touch-panel {
+        display: flex;
+        position: absolute;
+        bottom: 17px;
+        max-width: 99vw;
+    }
+
+    .retry-action {
+        display: none;
+        position: fixed;
+        height: calc(20px + 20px);
+        width: calc(150px + 50px);
+        border-radius: 8px;
+        top: calc(70% + 55px);
+        right: calc(50% - 100px);
+        border: none;
+        padding: 8px 12px;
+        font-size: 21px;
+        font-weight: 500;
+        color: rgba(255, 253, 253, 0.822);
+        background: rgba(122, 122, 122, 0.6);
+        z-index: 20;
+    }
+}
+
+@media only screen and (max-width: 480px) and (pointer: coarse) {
+    canvas {
+        height: 100vh;
+        width: 100vw;
+    }
+
+    .legal-page {
+        width: min(760px, 90%);
+        padding: 0;
+        justify-content: center;
+    }
+
+    .legal-card {
+        padding: 20px;
+        border-radius: 18px;
+        margin: 0;
+    }
+
+    .legal-back-link {
+        display: inline-flex;
+        margin-bottom: 20px;
+        color: #8a2f12;
+        font-weight: 100;
+        font-size: 32px;
+        text-decoration: none;
+    }
+
+    .stage-shell h1 {
+        display: none;
+    }
+
+    .stage-shell {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+        height: 100%;
+        width: 100vw;
+    }
+
+    .touch-panel {
+        display: flex;
+        position: absolute;
+        bottom: 17px;
+        max-width: 99vw;
+    }
+}
+
+.stage-shell:fullscreen,
+.stage-shell:-webkit-full-screen {
+    width: 100vw;
+    height: 100vh;
+}
+
+.stage-shell:fullscreen h1 {
+    display: none;
+}
+
+.stage-shell:fullscreen canvas,
+.stage-shell:-webkit-full-screen canvas {
+    width: 100vw;
+    height: 100vh;
+    max-width: none;
 }

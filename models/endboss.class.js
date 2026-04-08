@@ -5,14 +5,14 @@ class Endboss extends MovableObject {
     y = 55;
 
     IMAGES_WALKING = [
-        'img/4.Secuencias_Enemy_gigantón-Doña_Gallinota-/2.Ateción-ataque/1.Alerta/G5.png',
-        'img/4.Secuencias_Enemy_gigantón-Doña_Gallinota-/2.Ateción-ataque/1.Alerta/G6.png',
-        'img/4.Secuencias_Enemy_gigantón-Doña_Gallinota-/2.Ateción-ataque/1.Alerta/G7.png',
-        'img/4.Secuencias_Enemy_gigantón-Doña_Gallinota-/2.Ateción-ataque/1.Alerta/G8.png',
-        'img/4.Secuencias_Enemy_gigantón-Doña_Gallinota-/2.Ateción-ataque/1.Alerta/G9.png',
-        'img/4.Secuencias_Enemy_gigantón-Doña_Gallinota-/2.Ateción-ataque/1.Alerta/G10.png',
-        'img/4.Secuencias_Enemy_gigantón-Doña_Gallinota-/2.Ateción-ataque/1.Alerta/G11.png',
-        'img/4.Secuencias_Enemy_gigantón-Doña_Gallinota-/2.Ateción-ataque/1.Alerta/G12.png'
+        './assets/img/4_enemie_boss_chicken/2_alert/G5.png',
+        './assets/img/4_enemie_boss_chicken/2_alert/G6.png',
+        './assets/img/4_enemie_boss_chicken/2_alert/G7.png',
+        './assets/img/4_enemie_boss_chicken/2_alert/G8.png',
+        './assets/img/4_enemie_boss_chicken/2_alert/G9.png',
+        './assets/img/4_enemie_boss_chicken/2_alert/G10.png',
+        './assets/img/4_enemie_boss_chicken/2_alert/G11.png',
+        './assets/img/4_enemie_boss_chicken/2_alert/G12.png'
 
     ];
 
@@ -32,4 +32,3 @@ class Endboss extends MovableObject {
 
 
 }
-

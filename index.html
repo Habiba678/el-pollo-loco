@@ -1,13 +1,13 @@
 <!DOCTYPE html>
-<html lang="en">
-
+<html lang="de" translate="no">
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="google" content="notranslate">
-    <meta name="viegit stawport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>El Pollo Loco</title>
+    <link rel="stylesheet" href="style.css">
+
     <script src="models/drawable-object.class.js"></script>
     <script src="models/movable-object.class.js"></script>
     <script src="models/character.class.js"></script>
@@ -18,20 +18,40 @@
     <script src="models/background-object.class.js"></script>
     <script src="models/keyboard.class.js"></script>
     <script src="models/level.class.js"></script>
-    <script src="models/throwable-object.class.js"> </script>
+    <script src="models/throwable-object.class.js"></script>
     <script src="models/endboss.class.js"></script>
     <script src="levels/level1.js"></script>
     <script src="js/game.js"></script>
 </head>
 
 <body onload="init()">
+    <section id="gameContainer" class="stage-shell">
+        <button id="backToStartBtn" class="home-action" type="button">Back to Start</button>
+        <button id="nochmalBtn" class="retry-action" type="button">Reset</button>
 
-    <h1>EL POLLO LOCO</h1>
+        <h1>EL POLLO LOCO</h1>
 
-    <canvas id="canvas" width="720" height="480">
+        <canvas id="canvas" width="720" height="480"></canvas>
 
-    </canvas>
+        <div class="touch-panel">
+            <div class="touch-row">
+                <button id="btn-left" class="touch-trigger" type="button">◀️</button>
+                <button id="btn-right" class="touch-trigger" type="button">▶️</button>
+            </div>
 
+            <div class="touch-row">
+                <button id="btn-jump" class="touch-trigger" type="button">⤒</button>
+                <button id="btn-throw" class="touch-trigger" type="button">
+                    <img src="./assets/img/6_salsa_bottle/salsa_bottle.png" alt="salsa bottle" draggable="false">
+                </button>
+            </div>
+        </div>
+
+        <div id="orientationOverlay">
+            <div class="orientation-text">
+                <p>Zum Spielen bitte das Gerät seitlich drehen.</p>
+            </div>
+        </div>
+    </section>
 </body>
-
 </html>
