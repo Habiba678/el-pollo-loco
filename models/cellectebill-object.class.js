@@ -36,8 +36,8 @@ class CollectebillObjekts extends MovableObject {
         }
 
         this.loadImage('./assets/img/6_salsa_bottle/2_salsa_bottle_on_ground.png');
-        this.widht = 60;
+        this.widht = 70;
         this.height = 80;
-        this.offset = { top: 10, bottom: 5, left: 10, right: 10 };
+        this.offset = { top: 8, bottom: 5, left: 8, right: 8 };
     }
 }
