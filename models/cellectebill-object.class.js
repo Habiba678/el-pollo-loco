@@ -29,9 +29,9 @@ class CollectebillObjekts extends MovableObject {
     applyItemSetup() {
         if (this.itemKind === 'coin') {
             this.loadImage('./assets/img/8_coin/coin_1.png');
-            this.widht = 90;
-            this.height = 90;
-            this.offset = { top: 40, bottom: 40, left: 40, right: 40 };
+            this.widht = 95;
+            this.height = 95;
+            this.offset = { top: 35, bottom: 35, left: 35, right: 35 };
             return;
         }
 
