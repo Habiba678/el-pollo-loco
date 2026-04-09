@@ -163,7 +163,7 @@ class World {
 
         this.ctx.translate(this.camera_x, 0);
         this.addObjectsToMap(this.level.backgroundObjects);
-
+        
         this.ctx.translate(-this.camera_x, 0);
 
         this.addToMap(this.statusBarHealth);
