@@ -12,22 +12,26 @@ body {
     background-position: center;
 }
 
+body.overlay-open {
+    overflow: hidden;
+}
+
 h1 {
-    margin: 0;
+    margin: 0 0 12px 0;
 }
 
 button {
     cursor: pointer;
 }
 
-.stage-shell {
+.game-container {
     display: flex;
     justify-content: center;
     align-items: center;
     flex-direction: column;
-    width: 100%;
-    height: 100%;
     position: relative;
+    width: 100%;
+    max-width: 720px;
 }
 
 canvas {
@@ -37,7 +41,109 @@ canvas {
     height: 480px;
 }
 
-.touch-panel {
+.back-to-start-btn,
+.nochmal-btn {
+    position: absolute;
+    z-index: 20;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: 21px;
+    font-weight: 500;
+    color: rgba(255, 253, 253, 0.9);
+    background: rgba(122, 122, 122, 0.6);
+    display: none;
+}
+
+.back-to-start-btn:hover,
+.nochmal-btn:hover {
+    background: rgba(187, 186, 185, 0.92);
+}
+
+.back-to-start-btn {
+    width: 220px;
+    height: 50px;
+}
+
+.nochmal-btn {
+    width: 200px;
+    height: 50px;
+}
+
+.top-info-bar {
+    position: absolute;
+    top: 36px;
+    left: 18px;
+    z-index: 30;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 12px;
+}
+
+.top-info-bar.hidden-bar {
+    display: none !important;
+}
+
+.top-icon-btn {
+    width: 42px;
+    height: 42px;
+    border: none;
+    border-radius: 8px;
+    background: #E0F2F7;
+    color: #7c7b7b;
+    font-size: 22px;
+    font-weight: 700;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.top-icon-btn:hover {
+    background: #cfe6ed;
+}
+
+.desktop-only {
+    display: flex;
+}
+
+.mobile-only {
+    display: none;
+}
+
+.mobile-menu-wrap {
+    position: relative;
+}
+
+.mobile-info-menu {
+    position: absolute;
+    top: 56px;
+    right: 0;
+    min-width: 190px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 10px;
+    border-radius: 12px;
+    background: rgba(35, 35, 35, 0.92);
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.28);
+}
+
+.mobile-info-item {
+    border: none;
+    border-radius: 8px;
+    padding: 10px 12px;
+    text-align: left;
+    font-size: 15px;
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.mobile-info-item:hover {
+    background: rgba(255, 255, 255, 0.18);
+}
+
+.mobile-controls {
     margin-top: 12px;
     width: 100%;
     max-width: 720px;
@@ -51,60 +157,16 @@ canvas {
     touch-action: manipulation;
 }
 
-.home-action {
-    position: fixed;
-    top: 24px;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 20;
-    height: calc(30px + 20px);
-    width: calc(250px - 50px);
-    border: none;
-    border-radius: 8px;
-    padding: 8px 12px;
-    font-size: 21px;
-    font-weight: 500;
-    color: rgba(255, 253, 253, 0.822);
-    background: rgba(122, 122, 122, 0.6);
-    display: none;
-}
-
-.home-action:hover {
-    background: rgba(187, 186, 185, 0.92);
-}
-
-.retry-action {
-    display: none;
-    position: fixed;
-    height: calc(30px + 20px);
-    width: calc(150px + 50px);
-    border-radius: 8px;
-    bottom: 40px;
-    left: 50%;
-    transform: translateX(-50%);
-    border: none;
-    padding: 8px 12px;
-    font-size: 21px;
-    font-weight: 500;
-    color: rgba(255, 253, 253, 0.822);
-    background: rgba(122, 122, 122, 0.6);
-    z-index: 20;
-}
-
-.retry-action:hover {
-    background: rgba(187, 186, 185, 0.92);
-}
-
-body.touch-device .touch-panel {
+body.touch-device .mobile-controls {
     display: flex;
 }
 
-.touch-row {
+.mobile-controls-group {
     display: flex;
     gap: 30px;
 }
 
-.touch-trigger {
+.mobile-btn {
     width: 46px;
     height: 46px;
     border-radius: 50%;
@@ -121,7 +183,7 @@ body.touch-device .touch-panel {
     -webkit-user-drag: none;
 }
 
-.touch-trigger img {
+.mobile-btn img {
     width: 56px;
     height: 56px;
     border-radius: 50%;
@@ -150,260 +212,268 @@ body.touch-device .touch-panel {
     z-index: 9999;
 }
 
-.orientation-text {
+.orientation-message {
     max-width: 480px;
     font-size: 1.2rem;
 }
 
-@media (min-width: 1440px) and (max-width: 1920px) and (pointer: coarse) {
-    .touch-panel {
-        display: none;
-    }
+.hidden-layer {
+    display: none !important;
+}
 
-    .stage-shell {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        flex-direction: column;
-        height: 100%;
-        max-width: 720px;
-    }
+.overlay-layer {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    background: rgba(0, 0, 0, 0.45);
+    box-sizing: border-box;
+}
 
-    .home-action {
-        position: fixed;
-        top: 24px;
-        left: 50%;
-        transform: translateX(-50%);
-        z-index: 20;
-        height: calc(30px + 20px);
-        width: calc(250px + 50px);
-        border: none;
-        border-radius: 8px;
-        padding: 8px 12px;
-        font-size: 21px;
-        font-weight: 500;
-        color: rgba(255, 253, 253, 0.822);
-        background: rgba(122, 122, 122, 0.6);
-        display: none;
-    }
+.overlay-panel {
+    position: relative;
+    width: min(520px, 92vw);
+    max-height: 72vh;
+    border-radius: 18px;
+    background: rgba(255, 255, 255, 0.94);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+    padding: 26px 26px 22px;
+    box-sizing: border-box;
+    color: #1f1f1f;
+}
 
-    .home-action:hover {
-        background: rgba(187, 186, 185, 0.92);
-    }
+.legal-panel {
+    width: min(500px, 92vw);
+}
 
-    .retry-action {
-        display: none;
-        position: fixed;
-        height: calc(30px + 20px);
-        width: calc(150px + 50px);
-        border-radius: 8px;
-        bottom: 40px;
-        left: 50%;
-        transform: translateX(-50%);
-        border: none;
-        padding: 8px 12px;
-        font-size: 21px;
-        font-weight: 500;
-        color: rgba(255, 253, 253, 0.822);
-        background: rgba(122, 122, 122, 0.6);
-        z-index: 20;
-    }
+.guide-panel {
+    width: min(560px, 92vw);
+}
 
-    .retry-action:hover {
-        background: rgba(187, 186, 185, 0.92);
-    }
+.overlay-title {
+    margin: 0 0 18px 0;
+    text-align: center;
+    font-size: 24px;
+    font-weight: 700;
+}
+
+.overlay-close-btn {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    width: 38px;
+    height: 38px;
+    border: none;
+    border-radius: 50%;
+    background: #d9a39d;
+    color: #3a2a2a;
+    font-size: 26px;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.overlay-close-btn:hover {
+    background: #c98d86;
+}
+
+.overlay-scroll-area {
+    max-height: calc(72vh - 80px);
+    overflow-y: auto;
+    padding-right: 8px;
+}
+
+.overlay-section {
+    margin-bottom: 18px;
+}
+
+.overlay-section h3 {
+    margin: 0 0 10px 0;
+    text-align: center;
+    font-size: 20px;
+}
+
+.overlay-section p,
+.overlay-section li {
+    line-height: 1.55;
+    font-size: 16px;
+}
+
+.overlay-section ul {
+    margin: 0;
+    padding-left: 22px;
+}
+
+.overlay-scroll-area::-webkit-scrollbar {
+    width: 8px;
+}
+
+.overlay-scroll-area::-webkit-scrollbar-thumb {
+    background: rgba(122, 122, 122, 0.5);
+    border-radius: 8px;
+}
+
+.overlay-scroll-area::-webkit-scrollbar-track {
+    background: transparent;
 }
 
 @media only screen and (max-width: 1440px) and (pointer: coarse) {
     canvas {
-        height: 100vh;
         width: 100vw;
+        height: 100vh;
+        max-width: none;
     }
 
-    .legal-page {
-        width: min(760px, 90%);
-        padding: 20px;
-    }
-
-    .legal-card {
-        padding: 20px;
-        border-radius: 18px;
-        margin: 0;
-        padding: 20px;
-    }
-
-    .stage-shell h1 {
+    h1 {
         display: none;
     }
 
-    .stage-shell {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        flex-direction: column;
-        height: 100%;
+    .game-container {
         width: 100vw;
+        max-width: none;
     }
 
-    .touch-panel {
+    .mobile-controls {
         display: flex;
         position: absolute;
         bottom: 17px;
         max-width: 99vw;
     }
 
-    .home-action {
-        position: fixed;
-        top: 24px;
-        left: 50%;
-        transform: translateX(-50%);
-        z-index: 20;
-        height: calc(30px + 20px);
-        width: 100%;
-        max-width: calc(150px + 50px);
-        border: none;
-        border-radius: 8px;
-        padding: 8px 12px;
-        font-size: 21px;
-        font-weight: 500;
-        color: rgba(255, 253, 253, 0.822);
-        background: rgba(122, 122, 122, 0.6);
+    .desktop-only {
         display: none;
     }
 
-    .retry-action {
-        display: none;
-        position: fixed;
-        height: calc(30px + 20px);
-        width: 100%;
-        max-width: calc(150px + 50px);
-        border-radius: 8px;
-        top: calc(5% + 50px);
-        right: calc(50% - 100px);
-        border: none;
-        padding: 8px 12px;
-        font-size: 21px;
-        font-weight: 500;
-        color: rgba(255, 253, 253, 0.822);
-        background: rgba(122, 122, 122, 0.6);
-        z-index: 20;
+    .mobile-only {
+        display: block;
+    }
+
+    .top-info-bar {
+        top: 36px;
+        right: 18px;
+        left: auto;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 12px;
     }
 }
 
 @media only screen and (max-width: 768px) and (pointer: coarse) {
     canvas {
         width: 100vw;
+        height: 100vh;
+        max-width: none;
     }
 
-    .legal-page {
-        width: min(760px, 90%);
-        padding: 20px;
-    }
-
-    .legal-card {
-        padding: 20px;
-        border-radius: 18px;
-        margin: 0;
-    }
-
-    .stage-shell h1 {
+    h1 {
         display: none;
     }
 
-    .stage-shell {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        flex-direction: column;
-        height: 100%;
+    .game-container {
         width: 100vw;
+        max-width: none;
     }
 
-    .touch-panel {
+    .mobile-controls {
         display: flex;
         position: absolute;
         bottom: 17px;
         max-width: 99vw;
     }
 
-    .retry-action {
+    .desktop-only {
         display: none;
-        position: fixed;
-        height: calc(20px + 20px);
-        width: calc(150px + 50px);
-        border-radius: 8px;
-        top: calc(70% + 55px);
-        right: calc(50% - 100px);
-        border: none;
-        padding: 8px 12px;
-        font-size: 21px;
-        font-weight: 500;
-        color: rgba(255, 253, 253, 0.822);
-        background: rgba(122, 122, 122, 0.6);
-        z-index: 20;
+    }
+
+    .mobile-only {
+        display: block;
+    }
+
+    .top-info-bar {
+        top: 36px;
+        right: 18px;
+        left: auto;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 12px;
     }
 }
 
 @media only screen and (max-width: 480px) and (pointer: coarse) {
     canvas {
-        height: 100vh;
         width: 100vw;
+        height: 100vh;
+        max-width: none;
     }
 
-    .legal-page {
-        width: min(760px, 90%);
-        padding: 0;
-        justify-content: center;
-    }
-
-    .legal-card {
-        padding: 20px;
-        border-radius: 18px;
-        margin: 0;
-    }
-
-    .legal-back-link {
-        display: inline-flex;
-        margin-bottom: 20px;
-        color: #8a2f12;
-        font-weight: 100;
-        font-size: 32px;
-        text-decoration: none;
-    }
-
-    .stage-shell h1 {
+    h1 {
         display: none;
     }
 
-    .stage-shell {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        flex-direction: column;
-        height: 100%;
+    .game-container {
         width: 100vw;
+        max-width: none;
     }
 
-    .touch-panel {
+    .mobile-controls {
         display: flex;
         position: absolute;
         bottom: 17px;
         max-width: 99vw;
     }
+
+    .desktop-only {
+        display: none;
+    }
+
+    .mobile-only {
+        display: block;
+    }
+
+    .top-info-bar {
+        top: 36px;
+        right: 18px;
+        left: auto;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 12px;
+    }
+
+    .overlay-panel {
+        width: 94vw;
+        max-height: 74vh;
+        padding: 22px 18px 18px;
+    }
+
+    .overlay-title {
+        font-size: 22px;
+    }
+
+    .overlay-section p,
+    .overlay-section li {
+        font-size: 15px;
+    }
 }
 
-.stage-shell:fullscreen,
-.stage-shell:-webkit-full-screen {
+.game-container:fullscreen,
+.game-container:-webkit-full-screen {
     width: 100vw;
     height: 100vh;
+    max-width: none;
 }
 
-.stage-shell:fullscreen h1 {
+.game-container:fullscreen h1,
+.game-container:-webkit-full-screen h1 {
     display: none;
 }
 
-.stage-shell:fullscreen canvas,
-.stage-shell:-webkit-full-screen canvas {
+.game-container:fullscreen canvas,
+.game-container:-webkit-full-screen canvas {
     width: 100vw;
     height: 100vh;
     max-width: none;

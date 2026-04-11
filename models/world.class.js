@@ -9,6 +9,8 @@ class World {
     ctx;
     keyboard;
     camera_x = 0;
+    gameOver = false;
+    gameLoop = null;
 
     statusBarHealth = new StatusBar('health', 20, 20);
     statusBarBottle = new StatusBar('bottle', 20, 60);
@@ -47,8 +49,8 @@ class World {
         this.ctx = canvas.getContext('2d');
         this.canvas = canvas;
         this.keyboard = keyboard;
-        this.draw();
         this.setWorld();
+        this.draw();
         this.run();
     }
 
@@ -67,10 +69,23 @@ class World {
      * @returns {void}
      */
     run() {
-        setInterval(() => {
+        this.gameLoop = setInterval(() => {
+            if (this.gameOver) {
+                clearInterval(this.gameLoop);
+                return;
+            }
+
             this.checkCollisions();
             this.checkThrowObjects();
             this.statusBarHealth.setPercentage(this.character.energy);
+
+            if (this.character.energy <= 0) {
+                this.gameOver = true;
+
+                if (typeof showGameOverScreen === 'function') {
+                    showGameOverScreen();
+                }
+            }
         }, 200);
     }
 
@@ -81,6 +96,10 @@ class World {
      * @returns {void}
      */
     checkThrowObjects() {
+        if (this.gameOver) {
+            return;
+        }
+
         if (this.keyboard.D && this.bottlesCollected > 0) {
             let bottle = new ThrowableObject(this.character.x + 100, this.character.y + 100);
             this.throwableObjects.push(bottle);
@@ -159,11 +178,15 @@ class World {
      * @returns {void}
      */
     draw() {
+        if (this.gameOver) {
+            return;
+        }
+
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
         this.ctx.translate(this.camera_x, 0);
         this.addObjectsToMap(this.level.backgroundObjects);
-        
+
         this.ctx.translate(-this.camera_x, 0);
 
         this.addToMap(this.statusBarHealth);
@@ -182,9 +205,8 @@ class World {
 
         this.ctx.translate(-this.camera_x, 0);
 
-        let self = this;
-        requestAnimationFrame(function () {
-            self.draw();
+        requestAnimationFrame(() => {
+            this.draw();
         });
     }
 

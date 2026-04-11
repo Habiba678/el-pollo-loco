@@ -2,10 +2,9 @@
 <html lang="de" translate="no">
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="google" content="notranslate">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>El Pollo Loco</title>
+
     <link rel="stylesheet" href="style.css">
 
     <script src="models/drawable-object.class.js"></script>
@@ -14,46 +13,145 @@
     <script src="models/chicken.class.js"></script>
     <script src="models/small-chicken.class.js"></script>
     <script src="models/cloud.class.js"></script>
-    <script src="models/status-bar.class.js"></script>
-    <script src="models/cellectebill-object.class.js"></script>
-    <script src="models/world.class.js"></script>
     <script src="models/background-object.class.js"></script>
     <script src="models/keyboard.class.js"></script>
     <script src="models/level.class.js"></script>
+    <script src="models/status-bar.class.js"></script>
     <script src="models/throwable-object.class.js"></script>
+    <script src="models/cellectebill-object.class.js"></script>
     <script src="models/endboss.class.js"></script>
+    <script src="models/main.class.js"></script>
+    <script src="models/sound.class.js"></script>
+    <script src="models/responsiv.class.js"></script>
     <script src="levels/level1.js"></script>
+    <script src="models/world.class.js"></script>
     <script src="js/game.js"></script>
 </head>
 
 <body onload="init()">
-    <section id="gameContainer" class="stage-shell">
-        <button id="backToStartBtn" class="home-action" type="button">Back to Start</button>
-        <button id="nochmalBtn" class="retry-action" type="button">Reset</button>
+    <div id="gameContainer" class="game-container">
+        <button id="backToStartBtn" class="back-to-start-btn" type="button">Back to Start</button>
+        <button id="nochmalBtn" class="nochmal-btn" type="button">Restart</button>
 
-        <h1>EL POLLO LOCO</h1>
+        <div id="topInfoBar" class="top-info-bar">
+            <button class="top-icon-btn desktop-only" type="button" onclick="openLegalOverlay()" aria-label="Impressum">ℹ</button>
+            <button class="top-icon-btn desktop-only" type="button" onclick="openGuideOverlay()" aria-label="Spielübersicht">📘</button>
+
+            <div class="mobile-menu-wrap mobile-only">
+                <button id="mobileMenuToggle" class="top-icon-btn" type="button" onclick="toggleInfoMenu()" aria-label="Menü">☰</button>
+
+                <div id="mobileInfoMenu" class="mobile-info-menu hidden-layer">
+                    <button class="mobile-info-item" type="button" onclick="openLegalOverlayFromMenu()">ℹ Impressum</button>
+                    <button class="mobile-info-item" type="button" onclick="openGuideOverlayFromMenu()">📘 Spielübersicht</button>
+                </div>
+            </div>
+        </div>
+
+        <h1>El Pollo Loco</h1>
 
         <canvas id="canvas" width="720" height="480"></canvas>
 
-        <div class="touch-panel">
-            <div class="touch-row">
-                <button id="btn-left" class="touch-trigger" type="button">◀️</button>
-                <button id="btn-right" class="touch-trigger" type="button">▶️</button>
+        <div class="mobile-controls">
+            <div class="mobile-controls-group">
+                <button id="btn-left" class="mobile-btn" type="button">◀️</button>
+                <button id="btn-right" class="mobile-btn" type="button">▶️</button>
             </div>
 
-            <div class="touch-row">
-                <button id="btn-jump" class="touch-trigger" type="button">⤒</button>
-                <button id="btn-throw" class="touch-trigger" type="button">
+            <div class="mobile-controls-group">
+                <button id="btn-jump" class="mobile-btn" type="button">⤒</button>
+                <button id="btn-throw" class="mobile-btn" type="button">
                     <img src="./assets/img/6_salsa_bottle/salsa_bottle.png" alt="salsa bottle" draggable="false">
                 </button>
             </div>
         </div>
 
         <div id="orientationOverlay">
-            <div class="orientation-text">
-                <p>Zum Spielen bitte das Gerät seitlich drehen.</p>
+            <div class="orientation-message">
+                <p>Bitte drehe dein Handy ins Querformat, um zu spielen.</p>
             </div>
         </div>
-    </section>
+    </div>
+
+    <div id="legalOverlay" class="overlay-layer hidden-layer" onclick="closeLegalOverlay()">
+        <div class="overlay-panel legal-panel" onclick="event.stopPropagation()">
+            <button class="overlay-close-btn" type="button" onclick="closeLegalOverlay()">×</button>
+
+            <h2 class="overlay-title">Impressum</h2>
+
+            <div class="overlay-scroll-area">
+                <div class="overlay-section">
+                    <p><strong>Dein Name</strong></p>
+                    <p>Deine Straße 1</p>
+                    <p>12345 Deine Stadt</p>
+                </div>
+
+                <div class="overlay-section">
+                    <h3>Kontakt</h3>
+                    <p>Telefon: +49 000 000000</p>
+                </div>
+
+                <div class="overlay-section">
+                    <p>
+                        Quelle:
+                        <a href="https://www.e-recht24.de/impressum-generator.html" target="_blank" rel="noopener noreferrer">
+                            https://www.e-recht24.de/impressum-generator.html
+                        </a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="guideOverlay" class="overlay-layer hidden-layer" onclick="closeGuideOverlay()">
+        <div class="overlay-panel guide-panel" onclick="event.stopPropagation()">
+            <button class="overlay-close-btn" type="button" onclick="closeGuideOverlay()">×</button>
+
+            <h2 class="overlay-title">Spielübersicht</h2>
+
+            <div class="overlay-scroll-area">
+                <div class="overlay-section">
+                    <h3>Steuerung</h3>
+                    <ul>
+                        <li><strong>Pfeil rechts:</strong> nach rechts laufen</li>
+                        <li><strong>Pfeil links:</strong> nach links laufen</li>
+                        <li><strong>Leertaste:</strong> springen</li>
+                        <li><strong>Taste D:</strong> Flasche werfen</li>
+                    </ul>
+                </div>
+
+                <div class="overlay-section">
+                    <h3>Gegner</h3>
+                    <ul>
+                        <li>Kleine und normale Hühner tauchen im Level auf.</li>
+                        <li>Am Ende des Levels wartet der Endgegner.</li>
+                    </ul>
+                </div>
+
+                <div class="overlay-section">
+                    <h3>Angriff</h3>
+                    <ul>
+                        <li>Einige Gegner kannst du von oben durch einen Sprung besiegen.</li>
+                        <li>Mit Flaschen kannst du Gegner auch aus etwas Abstand treffen.</li>
+                    </ul>
+                </div>
+
+                <div class="overlay-section">
+                    <h3>Bosskampf</h3>
+                    <p>
+                        Der Endgegner ist deutlich stärker und hält mehrere Treffer aus.
+                        Deshalb brauchst du gutes Timing, Bewegung und genug gesammelte Flaschen.
+                    </p>
+                </div>
+
+                <div class="overlay-section">
+                    <h3>Flaschen und Münzen</h3>
+                    <ul>
+                        <li>Flaschen sammelst du unterwegs ein und nutzt sie später im Kampf.</li>
+                        <li>Münzen findest du auf dem Weg durch das Level.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
 </body>
 </html>
