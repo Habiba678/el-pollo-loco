@@ -6,7 +6,15 @@ class GameScreen {
         this.canvas = null;
         this.ctx = null;
         this.fullscreenGraphic = null;
-        this.playButtonArea = { x: 300, y: 365, width: 170, height: 55 };
+
+        /* Start-Button:
+           x = links/rechts
+           y = oben/unten
+           width = Breite
+           height = Höhe
+        */
+        this.playButtonArea = { x: 320, y: 415, width: 150, height: 50 };
+
         this.expandIconArea = { x: 0, y: 0, width: 42, height: 42 };
         this.audioIconArea = { x: 0, y: 0, width: 42, height: 42 };
     }

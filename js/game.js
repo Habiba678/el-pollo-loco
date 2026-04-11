@@ -20,11 +20,6 @@ const AUDIO_STORAGE_KEY = 'elpolo.musicMuted';
 let hasPlayerWon = false;
 let lostWithoutBottles = false;
 
-/**
- * Starts the basic game setup.
- *
- * @returns {void}
- */
 function init() {
     canvas = document.getElementById('canvas');
     ctx = canvas.getContext('2d');
@@ -43,32 +38,17 @@ function init() {
     bindRuntimeEvents();
 }
 
-/**
- * Creates the screen and audio helpers.
- *
- * @returns {void}
- */
 function setupManagers() {
     gameAudio = new SoundManager(AUDIO_STORAGE_KEY);
     screenView = new GameScreen();
     screenView.setCanvas(canvas, ctx);
 }
 
-/**
- * Sets up the mobile touch controller.
- *
- * @returns {void}
- */
 function setupMobileControls() {
     mobileControls = new MobilScreen(keyboard, resetKeyboardState);
     mobileControls.init();
 }
 
-/**
- * Loads audio settings and unlocks playback after interaction.
- *
- * @returns {void}
- */
 function setupAudio() {
     gameAudio.init();
     audioMuted = gameAudio.loadMutedState();
@@ -80,11 +60,6 @@ function setupAudio() {
     });
 }
 
-/**
- * Registers canvas and window events.
- *
- * @returns {void}
- */
 function bindRuntimeEvents() {
     canvas.addEventListener('click', handleCanvasClick);
     canvas.addEventListener('mousemove', handleCanvasMouseMove);
@@ -99,11 +74,6 @@ function bindRuntimeEvents() {
     window.addEventListener('keydown', handleOverlayEscapeKey);
 }
 
-/**
- * Plays the matching audio for the active screen state.
- *
- * @returns {void}
- */
 function playCurrentSceneAudio() {
     const sceneName = hasPlayerWon
         ? 'win'
@@ -116,11 +86,6 @@ function playCurrentSceneAudio() {
     gameAudio.playScene(sceneName);
 }
 
-/**
- * Connects the back-to-start button.
- *
- * @returns {void}
- */
 function bindBackButton() {
     if (!backToStartButton) {
         return;
@@ -129,11 +94,6 @@ function bindBackButton() {
     backToStartButton.addEventListener('click', returnToStartScreen);
 }
 
-/**
- * Connects the restart button.
- *
- * @returns {void}
- */
 function bindRestartButton() {
     if (!restartButton) {
         return;
@@ -142,11 +102,6 @@ function bindRestartButton() {
     restartButton.addEventListener('click', restartRoundDirectly);
 }
 
-/**
- * Shows or hides the top info buttons depending on game state.
- *
- * @returns {void}
- */
 function refreshTopInfoBar() {
     if (!topInfoBar) {
         return;
@@ -156,11 +111,6 @@ function refreshTopInfoBar() {
     topInfoBar.classList.toggle('hidden-bar', !shouldShow);
 }
 
-/**
- * Updates the visibility of the overlay buttons.
- *
- * @returns {void}
- */
 function refreshOverlayButtons() {
     placeOverlayButtons();
     refreshTopInfoBar();
@@ -174,11 +124,6 @@ function refreshOverlayButtons() {
     }
 }
 
-/**
- * Places the overlay buttons relative to the game container and canvas.
- *
- * @returns {void}
- */
 function placeOverlayButtons() {
     if (!canvas) {
         return;
@@ -195,7 +140,6 @@ function placeOverlayButtons() {
     const canvasLeftInsideContainer = canvasRect.left - containerRect.left;
     const canvasTopInsideContainer = canvasRect.top - containerRect.top;
     const canvasCenterXInsideContainer = canvasLeftInsideContainer + canvasRect.width / 2;
-    const canvasBottomInsideContainer = canvasTopInsideContainer + canvasRect.height;
 
     if (backToStartButton) {
         backToStartButton.style.left = `${canvasCenterXInsideContainer}px`;
@@ -209,11 +153,11 @@ function placeOverlayButtons() {
 
     if (isGameFinished) {
         if (backToStartButton) {
-            backToStartButton.style.top = `${canvasBottomInsideContainer - 130}px`;
+            backToStartButton.style.top = `${canvasTopInsideContainer + 18}px`;
         }
 
         if (restartButton) {
-            restartButton.style.top = `${canvasBottomInsideContainer - 65}px`;
+            restartButton.style.top = `${canvasTopInsideContainer + 68}px`;
         }
 
         return;
@@ -221,30 +165,25 @@ function placeOverlayButtons() {
 
     if (isGameRunning) {
         if (backToStartButton) {
-            backToStartButton.style.top = `${canvasTopInsideContainer + 12}px`;
+            backToStartButton.style.top = `${canvasTopInsideContainer + 18}px`;
         }
 
         if (restartButton) {
-            restartButton.style.top = `${canvasBottomInsideContainer - 60}px`;
+            restartButton.style.top = `${canvasTopInsideContainer + 68}px`;
         }
 
         return;
     }
 
     if (backToStartButton) {
-        backToStartButton.style.top = `${canvasTopInsideContainer + 12}px`;
+        backToStartButton.style.top = `${canvasTopInsideContainer + 18}px`;
     }
 
     if (restartButton) {
-        restartButton.style.top = `${canvasBottomInsideContainer - 60}px`;
+        restartButton.style.top = `${canvasTopInsideContainer + 68}px`;
     }
 }
 
-/**
- * Stops the current world safely.
- *
- * @returns {void}
- */
 function stopActiveWorld() {
     if (!world) {
         return;
@@ -258,11 +197,6 @@ function stopActiveWorld() {
     world = null;
 }
 
-/**
- * Resets all keyboard flags.
- *
- * @returns {void}
- */
 function resetKeyboardState() {
     keyboard.LEFT = false;
     keyboard.RIGHT = false;
@@ -272,11 +206,6 @@ function resetKeyboardState() {
     keyboard.D = false;
 }
 
-/**
- * Returns from gameplay back to the start screen.
- *
- * @returns {void}
- */
 function returnToStartScreen() {
     isGameRunning = false;
     isGameFinished = false;
@@ -298,12 +227,6 @@ function returnToStartScreen() {
     renderStartView();
 }
 
-/**
- * Passes the canvas click to the screen controller.
- *
- * @param {MouseEvent} event Browser click event.
- * @returns {void}
- */
 function handleCanvasClick(event) {
     screenView.handleCanvasClick(
         event,
@@ -317,12 +240,6 @@ function handleCanvasClick(event) {
     );
 }
 
-/**
- * Updates hover state over the canvas.
- *
- * @param {MouseEvent} event Browser mouse event.
- * @returns {void}
- */
 function handleCanvasMouseMove(event) {
     screenView.handleCanvasMouseMove(event, {
         gameStarted: isGameRunning,
@@ -330,20 +247,10 @@ function handleCanvasMouseMove(event) {
     });
 }
 
-/**
- * Restores the default canvas cursor.
- *
- * @returns {void}
- */
 function handleCanvasMouseLeave() {
     screenView.resetCanvasCursor();
 }
 
-/**
- * Refreshes responsive positions on resize.
- *
- * @returns {void}
- */
 function handleResize() {
     screenView.updateIconPositions();
     mobileControls.checkOrientation();
@@ -351,11 +258,6 @@ function handleResize() {
     closeInfoMenu();
 }
 
-/**
- * Starts a new round.
- *
- * @returns {void}
- */
 function launchGame() {
     isGameRunning = true;
     isGameFinished = false;
@@ -374,22 +276,12 @@ function launchGame() {
     refreshOverlayButtons();
 }
 
-/**
- * Restarts immediately.
- *
- * @returns {void}
- */
 function restartRoundDirectly() {
     stopActiveWorld();
     resetKeyboardState();
     launchGame();
 }
 
-/**
- * Draws the start screen.
- *
- * @returns {void}
- */
 function renderStartView() {
     refreshOverlayButtons();
     screenView.showStartScreen(audioMuted, () => {
@@ -397,11 +289,6 @@ function renderStartView() {
     });
 }
 
-/**
- * Refreshes the speaker icon.
- *
- * @returns {void}
- */
 function refreshAudioIcon() {
     if (!screenView) {
         return;
@@ -410,11 +297,6 @@ function refreshAudioIcon() {
     screenView.refreshSpeakerIcon(audioMuted);
 }
 
-/**
- * Toggles mute mode and refreshes active audio.
- *
- * @returns {void}
- */
 function switchAudioMode() {
     audioMuted = gameAudio.toggleMute();
 
@@ -427,11 +309,6 @@ function switchAudioMode() {
     refreshAudioIcon();
 }
 
-/**
- * Opens the legal overlay.
- *
- * @returns {void}
- */
 function openLegalOverlay() {
     const overlay = document.getElementById('legalOverlay');
     closeInfoMenu();
@@ -442,11 +319,6 @@ function openLegalOverlay() {
     }
 }
 
-/**
- * Closes the legal overlay.
- *
- * @returns {void}
- */
 function closeLegalOverlay() {
     const overlay = document.getElementById('legalOverlay');
 
@@ -457,11 +329,6 @@ function closeLegalOverlay() {
     refreshBodyOverlayState();
 }
 
-/**
- * Opens the guide overlay.
- *
- * @returns {void}
- */
 function openGuideOverlay() {
     const overlay = document.getElementById('guideOverlay');
     closeInfoMenu();
@@ -472,11 +339,6 @@ function openGuideOverlay() {
     }
 }
 
-/**
- * Closes the guide overlay.
- *
- * @returns {void}
- */
 function closeGuideOverlay() {
     const overlay = document.getElementById('guideOverlay');
 
@@ -487,11 +349,6 @@ function closeGuideOverlay() {
     refreshBodyOverlayState();
 }
 
-/**
- * Opens or closes the mobile info menu.
- *
- * @returns {void}
- */
 function toggleInfoMenu() {
     const menu = document.getElementById('mobileInfoMenu');
     if (!menu) {
@@ -501,11 +358,6 @@ function toggleInfoMenu() {
     menu.classList.toggle('hidden-layer');
 }
 
-/**
- * Closes the mobile info menu.
- *
- * @returns {void}
- */
 function closeInfoMenu() {
     const menu = document.getElementById('mobileInfoMenu');
     if (!menu) {
@@ -515,32 +367,16 @@ function closeInfoMenu() {
     menu.classList.add('hidden-layer');
 }
 
-/**
- * Opens the legal overlay from the mobile menu.
- *
- * @returns {void}
- */
 function openLegalOverlayFromMenu() {
     closeInfoMenu();
     openLegalOverlay();
 }
 
-/**
- * Opens the guide overlay from the mobile menu.
- *
- * @returns {void}
- */
 function openGuideOverlayFromMenu() {
     closeInfoMenu();
     openGuideOverlay();
 }
 
-/**
- * Closes the mobile menu when clicking outside of it.
- *
- * @param {MouseEvent} event Browser click event.
- * @returns {void}
- */
 function handleOutsideMenuClick(event) {
     const menuWrap = document.querySelector('.mobile-menu-wrap');
     if (!menuWrap) {
@@ -552,12 +388,6 @@ function handleOutsideMenuClick(event) {
     }
 }
 
-/**
- * Closes open overlays with the Escape key.
- *
- * @param {KeyboardEvent} event Keyboard event.
- * @returns {void}
- */
 function handleOverlayEscapeKey(event) {
     if (event.key !== 'Escape') {
         return;
@@ -566,22 +396,12 @@ function handleOverlayEscapeKey(event) {
     closeAllPanels();
 }
 
-/**
- * Closes all overlays and menus.
- *
- * @returns {void}
- */
 function closeAllPanels() {
     closeLegalOverlay();
     closeGuideOverlay();
     closeInfoMenu();
 }
 
-/**
- * Updates the body class depending on open overlays.
- *
- * @returns {void}
- */
 function refreshBodyOverlayState() {
     const legalOverlay = document.getElementById('legalOverlay');
     const guideOverlay = document.getElementById('guideOverlay');
@@ -596,11 +416,6 @@ function refreshBodyOverlayState() {
     }
 }
 
-/**
- * Shows the win screen.
- *
- * @returns {void}
- */
 function showWinScreen() {
     isGameRunning = false;
     isGameFinished = true;
@@ -625,11 +440,6 @@ function showWinScreen() {
     );
 }
 
-/**
- * Shows the normal game over screen.
- *
- * @returns {void}
- */
 function showGameOverScreen() {
     isGameRunning = false;
     isGameFinished = true;
@@ -654,11 +464,6 @@ function showGameOverScreen() {
     );
 }
 
-/**
- * Shows the lose screen for the no-bottles case.
- *
- * @returns {void}
- */
 function showNoBottlesScreen() {
     isGameRunning = false;
     isGameFinished = true;
