@@ -47,27 +47,19 @@ canvas {
     z-index: 20;
     border: none;
     border-radius: 8px;
-    padding: 8px 12px;
-    font-size: 21px;
+    padding: 6px 10px;
+    font-size: 17px;
     font-weight: 500;
-    color: rgba(255, 253, 253, 0.9);
+    color: rgba(255, 253, 253, 0.92);
     background: rgba(122, 122, 122, 0.6);
     display: none;
+    width: 180px;
+    height: 42px;
 }
 
 .back-to-start-btn:hover,
 .nochmal-btn:hover {
     background: rgba(187, 186, 185, 0.92);
-}
-
-.back-to-start-btn {
-    width: 220px;
-    height: 50px;
-}
-
-.nochmal-btn {
-    width: 200px;
-    height: 50px;
 }
 
 .top-info-bar {

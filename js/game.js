@@ -37,7 +37,7 @@ function init() {
     renderStartView();
     setupMobileControls();
     mobileControls.checkOrientation();
-    placeOverlayButtons();
+    refreshOverlayButtons();
     bindBackButton();
     bindRestartButton();
     bindRuntimeEvents();
@@ -175,7 +175,7 @@ function refreshOverlayButtons() {
 }
 
 /**
- * Places the overlay buttons relative to the canvas.
+ * Places the overlay buttons relative to the game container and canvas.
  *
  * @returns {void}
  */
@@ -184,26 +184,36 @@ function placeOverlayButtons() {
         return;
     }
 
-    const rect = canvas.getBoundingClientRect();
-    const centerX = rect.left + rect.width / 2;
+    const gameContainer = document.getElementById('gameContainer');
+    if (!gameContainer) {
+        return;
+    }
+
+    const canvasRect = canvas.getBoundingClientRect();
+    const containerRect = gameContainer.getBoundingClientRect();
+
+    const canvasLeftInsideContainer = canvasRect.left - containerRect.left;
+    const canvasTopInsideContainer = canvasRect.top - containerRect.top;
+    const canvasCenterXInsideContainer = canvasLeftInsideContainer + canvasRect.width / 2;
+    const canvasBottomInsideContainer = canvasTopInsideContainer + canvasRect.height;
 
     if (backToStartButton) {
-        backToStartButton.style.left = `${centerX}px`;
+        backToStartButton.style.left = `${canvasCenterXInsideContainer}px`;
         backToStartButton.style.transform = 'translateX(-50%)';
     }
 
     if (restartButton) {
-        restartButton.style.left = `${centerX}px`;
+        restartButton.style.left = `${canvasCenterXInsideContainer}px`;
         restartButton.style.transform = 'translateX(-50%)';
     }
 
     if (isGameFinished) {
         if (backToStartButton) {
-            backToStartButton.style.top = `${rect.top + 18}px`;
+            backToStartButton.style.top = `${canvasBottomInsideContainer - 130}px`;
         }
 
         if (restartButton) {
-            restartButton.style.top = `${rect.bottom - 70}px`;
+            restartButton.style.top = `${canvasBottomInsideContainer - 65}px`;
         }
 
         return;
@@ -211,22 +221,22 @@ function placeOverlayButtons() {
 
     if (isGameRunning) {
         if (backToStartButton) {
-            backToStartButton.style.top = `${Math.max(rect.top + 12, 12)}px`;
+            backToStartButton.style.top = `${canvasTopInsideContainer + 12}px`;
         }
 
         if (restartButton) {
-            restartButton.style.top = `${rect.bottom - 60}px`;
+            restartButton.style.top = `${canvasBottomInsideContainer - 60}px`;
         }
 
         return;
     }
 
     if (backToStartButton) {
-        backToStartButton.style.top = `${Math.max(rect.top + 12, 12)}px`;
+        backToStartButton.style.top = `${canvasTopInsideContainer + 12}px`;
     }
 
     if (restartButton) {
-        restartButton.style.top = `${rect.bottom - 60}px`;
+        restartButton.style.top = `${canvasBottomInsideContainer - 60}px`;
     }
 }
 
@@ -337,7 +347,7 @@ function handleCanvasMouseLeave() {
 function handleResize() {
     screenView.updateIconPositions();
     mobileControls.checkOrientation();
-    placeOverlayButtons();
+    refreshOverlayButtons();
     closeInfoMenu();
 }
 
