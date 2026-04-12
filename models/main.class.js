@@ -7,12 +7,6 @@ class GameScreen {
         this.ctx = null;
         this.fullscreenGraphic = null;
 
-        /* Start-Button:
-           x = links/rechts
-           y = oben/unten
-           width = Breite
-           height = Höhe
-        */
         this.playButtonArea = { x: 320, y: 415, width: 150, height: 50 };
 
         this.expandIconArea = { x: 0, y: 0, width: 42, height: 42 };
@@ -120,13 +114,35 @@ class GameScreen {
     }
 
     showResultScreen(imageSrc, musicMuted, onLoaded) {
-        this.renderImageScreen(imageSrc, () => {
-            this.drawSpeakerIcon(musicMuted);
+        const screenImage = new Image();
+        screenImage.src = imageSrc;
+
+        screenImage.onload = () => {
+            this.ctx.save();
+            this.ctx.fillStyle = "rgba(0, 0, 0, 0.16)";
+            this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+            this.ctx.restore();
+
+            const targetWidth = this.canvas.width * 0.78;
+            const targetHeight = this.canvas.height * 0.78;
+
+            const scale = Math.min(
+                targetWidth / screenImage.width,
+                targetHeight / screenImage.height
+            );
+
+            const drawWidth = screenImage.width * scale;
+            const drawHeight = screenImage.height * scale;
+
+            const drawX = (this.canvas.width - drawWidth) / 2;
+            const drawY = (this.canvas.height - drawHeight) / 2;
+
+            this.ctx.drawImage(screenImage, drawX, drawY, drawWidth, drawHeight);
 
             if (typeof onLoaded === "function") {
                 onLoaded();
             }
-        });
+        };
     }
 
     renderImageScreen(imageSrc, afterDraw) {
@@ -141,7 +157,7 @@ class GameScreen {
     }
 
     drawStartButton() {
-        this.ctx.fillStyle = "rgba(122, 122, 122, 0.6)";
+        this.ctx.fillStyle = "rgba(198, 112, 104, 0.88)";
         this.drawRoundedRect(
             this.playButtonArea.x,
             this.playButtonArea.y,
@@ -150,7 +166,7 @@ class GameScreen {
             8
         );
 
-        this.ctx.fillStyle = "#ffffef";
+        this.ctx.fillStyle = "#fff8f2";
         this.ctx.font = "18px Arial";
         this.ctx.textAlign = "center";
         this.ctx.textBaseline = "middle";

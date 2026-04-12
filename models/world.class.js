@@ -8,6 +8,7 @@ class World {
     canvas;
     ctx;
     keyboard;
+    gameAudio;
     camera_x = 0;
     gameOver = false;
     gameLoop = null;
@@ -44,11 +45,13 @@ class World {
      *
      * @param {HTMLCanvasElement} canvas Canvas element used for the game.
      * @param {Keyboard} keyboard Keyboard input state object.
+     * @param {SoundManager} gameAudio Sound manager instance.
      */
-    constructor(canvas, keyboard) {
+    constructor(canvas, keyboard, gameAudio) {
         this.ctx = canvas.getContext('2d');
         this.canvas = canvas;
         this.keyboard = keyboard;
+        this.gameAudio = gameAudio;
         this.setWorld();
         this.draw();
         this.run();
@@ -82,9 +85,11 @@ class World {
             if (this.character.energy <= 0) {
                 this.gameOver = true;
 
-                if (typeof showGameOverScreen === 'function') {
-                    showGameOverScreen();
-                }
+                setTimeout(() => {
+                    if (typeof showGameOverScreen === 'function') {
+                        showGameOverScreen();
+                    }
+                }, 250);
             }
         }, 200);
     }
@@ -108,6 +113,10 @@ class World {
             const percentage = Math.min(this.bottlesCollected * 20, 100);
             this.statusBarBottle.setBottlePercentage(percentage);
 
+            if (this.gameAudio) {
+                this.gameAudio.playEndbossHit();
+            }
+
             this.keyboard.D = false;
         }
     }
@@ -122,6 +131,10 @@ class World {
             if (this.character.isColliding(enemy)) {
                 this.character.hit();
                 this.statusBarHealth.setPercentage(this.character.energy);
+
+                if (this.gameAudio) {
+                    this.gameAudio.playCharacterHit();
+                }
             }
         });
 
@@ -145,6 +158,10 @@ class World {
 
                 const percentage = Math.min(this.bottlesCollected * 20, 100);
                 this.statusBarBottle.setBottlePercentage(percentage);
+
+                if (this.gameAudio) {
+                    this.gameAudio.playBottleCollect();
+                }
             }
         }
     }
@@ -168,6 +185,10 @@ class World {
                     : 0;
 
                 this.statusBarCoins.setBottlePercentage(percentage);
+
+                if (this.gameAudio) {
+                    this.gameAudio.playCoinCollect();
+                }
             }
         }
     }
@@ -186,24 +207,18 @@ class World {
 
         this.ctx.translate(this.camera_x, 0);
         this.addObjectsToMap(this.level.backgroundObjects);
-
+        this.addObjectsToMap(this.level.clouds);
+        this.addObjectsToMap(this.level.enemies);
+        this.addObjectsToMap(this.throwableObjects);
+        this.addObjectsToMap(this.bottle);
+        this.addObjectsToMap(this.coins);
+        this.addToMap(this.character);
         this.ctx.translate(-this.camera_x, 0);
 
         this.addToMap(this.statusBarHealth);
         this.addToMap(this.statusBarBottle);
         this.addToMap(this.statusBarCoins);
         this.addToMap(this.statusBarEndboss);
-
-        this.ctx.translate(this.camera_x, 0);
-
-        this.addToMap(this.character);
-        this.addObjectsToMap(this.level.clouds);
-        this.addObjectsToMap(this.level.enemies);
-        this.addObjectsToMap(this.throwableObjects);
-        this.addObjectsToMap(this.bottle);
-        this.addObjectsToMap(this.coins);
-
-        this.ctx.translate(-this.camera_x, 0);
 
         requestAnimationFrame(() => {
             this.draw();
@@ -234,7 +249,7 @@ class World {
         }
 
         mo.draw(this.ctx);
-        mo.drawFrame(this.ctx);
+        // mo.drawFrame(this.ctx);
 
         if (mo.otherDirection) {
             this.flipImageBack(mo);

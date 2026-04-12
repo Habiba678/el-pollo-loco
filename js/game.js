@@ -54,8 +54,8 @@ function setupAudio() {
     audioMuted = gameAudio.loadMutedState();
 
     gameAudio.initUnlock(() => {
-        if (!audioMuted) {
-            playCurrentSceneAudio();
+        if (!audioMuted && isGameRunning) {
+            gameAudio.playGame();
         }
     });
 }
@@ -116,7 +116,7 @@ function refreshOverlayButtons() {
     refreshTopInfoBar();
 
     if (backToStartButton) {
-        backToStartButton.style.display = (isGameRunning || isGameFinished) ? 'block' : 'none';
+        backToStartButton.style.display = isGameFinished ? 'block' : 'none';
     }
 
     if (restartButton) {
@@ -152,24 +152,15 @@ function placeOverlayButtons() {
     }
 
     if (isGameFinished) {
-        if (backToStartButton) {
-            backToStartButton.style.top = `${canvasTopInsideContainer + 18}px`;
-        }
+        const bottomOffset = 118;
+        const gap = 10;
 
         if (restartButton) {
-            restartButton.style.top = `${canvasTopInsideContainer + 68}px`;
+            restartButton.style.top = `${canvasTopInsideContainer + canvasRect.height - bottomOffset}px`;
         }
 
-        return;
-    }
-
-    if (isGameRunning) {
         if (backToStartButton) {
-            backToStartButton.style.top = `${canvasTopInsideContainer + 18}px`;
-        }
-
-        if (restartButton) {
-            restartButton.style.top = `${canvasTopInsideContainer + 68}px`;
+            backToStartButton.style.top = `${canvasTopInsideContainer + canvasRect.height - bottomOffset + 38 + gap}px`;
         }
 
         return;
@@ -284,9 +275,7 @@ function restartRoundDirectly() {
 
 function renderStartView() {
     refreshOverlayButtons();
-    screenView.showStartScreen(audioMuted, () => {
-        gameAudio.playGame();
-    });
+    screenView.showStartScreen(audioMuted);
 }
 
 function refreshAudioIcon() {
@@ -454,12 +443,12 @@ function showGameOverScreen() {
 
     gameAudio.stopGameplaySounds();
     gameAudio.stopTrack('game', false);
-    gameAudio.stopTracks(['noBottles']);
+    gameAudio.stopTracks(['noBottles', 'win']);
     gameAudio.playGameOver();
     refreshOverlayButtons();
 
     screenView.showResultScreen(
-        './assets/img/9_intro_outro_screens/game_over/game over.png',
+        './assets/img/You won, you lost/Game Over.png',
         audioMuted
     );
 }

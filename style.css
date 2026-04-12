@@ -40,26 +40,24 @@ canvas {
     max-width: 720px;
     height: 480px;
 }
-
 .back-to-start-btn,
 .nochmal-btn {
     position: absolute;
-    z-index: 20;
+    width: 145px;
+    height: 38px;
     border: none;
-    border-radius: 8px;
-    padding: 6px 10px;
-    font-size: 17px;
+    border-radius: 10px;
+    background: rgba(198, 112, 104, 0.88);
+    color: #fff8f2;
+    font-size: 15px;
     font-weight: 500;
-    color: rgba(255, 253, 253, 0.92);
-    background: rgba(122, 122, 122, 0.6);
-    display: none;
-    width: 180px;
-    height: 42px;
+    cursor: pointer;
+    z-index: 20;
 }
 
 .back-to-start-btn:hover,
 .nochmal-btn:hover {
-    background: rgba(187, 186, 185, 0.92);
+    background: rgba(183, 96, 88, 0.95);
 }
 
 .top-info-bar {

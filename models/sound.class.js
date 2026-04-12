@@ -15,21 +15,21 @@ class SoundManager {
             return;
         }
 
-        this.audioPool.game = this.buildAudio('./assets/audio/music.mp3', true, 0.15);
-        this.audioPool.gameOver = this.buildAudio('./assets/audio/freesound_community_ver-arcade-6435.mp3', false, 0.18);
-        this.audioPool.win = this.buildAudio('./assets/audio/win.mp3', false, 0.15);
-        this.audioPool.noBottles = this.buildAudio('./assets/audio/freesound_community_ver-arcade-6435.mp3', false, 0.15);
+        this.audioPool.game = this.buildAudio('./assets/audio/music.mp3', true, 0.06);
+        this.audioPool.gameOver = this.buildAudio('./assets/audio/freesound_community_ver-arcade-6435.mp3', false, 0.10);
+        this.audioPool.win = this.buildAudio('./assets/audio/win.mp3', false, 0.10);
+        this.audioPool.noBottles = this.buildAudio('./assets/audio/freesound_community_ver-arcade-6435.mp3', false, 0.10);
 
-        this.audioPool.run = this.buildAudio('./assets/audio/running.mp3', true, 0.10);
-        this.audioPool.jump = this.buildAudio('./assets/audio/jump.mp3', false, 0.10);
+        this.audioPool.run = this.buildAudio('./assets/audio/running.mp3', true, 0.03);
+        this.audioPool.jump = this.buildAudio('./assets/audio/jump.mp3', false, 0.06);
 
-        this.audioPool.bottleCollect = this.buildAudio('./assets/audio/bottle.mp3', false, 0.10);
-        this.audioPool.coinCollect = this.buildAudio('./assets/audio/bottle.mp3', false, 0.10);
+        this.audioPool.bottleCollect = this.buildAudio('./assets/audio/bottle.mp3', false, 0.05);
+        this.audioPool.coinCollect = this.buildAudio('./assets/audio/bottle.mp3', false, 0.04);
 
-        this.audioPool.bottleBreak = this.buildAudio('./assets/audio/glass.mp3', false, 0.10);
-        this.audioPool.enemyKill = this.buildAudio('./assets/audio/chicken.mp3', false, 0.10);
-        this.audioPool.characterHit = this.buildAudio('./assets/audio/el_pollo_loco.mp3', false, 0.12);
-        this.audioPool.endbossHit = this.buildAudio('./assets/audio/throw.mp3', false, 0.12);
+        this.audioPool.bottleBreak = this.buildAudio('./assets/audio/glass.mp3', false, 0.06);
+        this.audioPool.enemyKill = this.buildAudio('./assets/audio/chicken.mp3', false, 0.06);
+        this.audioPool.characterHit = this.buildAudio('./assets/audio/el_pollo_loco.mp3', false, 0.07);
+        this.audioPool.endbossHit = this.buildAudio('./assets/audio/throw.mp3', false, 0.05);
     }
 
     buildAudio(src, loop = false, volume = 0.15) {
