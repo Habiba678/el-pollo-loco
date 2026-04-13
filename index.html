@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>El Pollo Loco</title>
+
     <link rel="stylesheet" href="style.css">
 
     <script src="models/drawable-object.class.js"></script>
@@ -51,15 +52,23 @@
         <canvas id="canvas" width="720" height="480"></canvas>
 
         <div class="mobile-controls">
-            <div class="mobile-controls-group">
-                <button id="btn-left" class="mobile-btn" type="button">◀️</button>
-                <button id="btn-right" class="mobile-btn" type="button">▶️</button>
+            <div class="mobile-controls-group mobile-controls-left">
+                <button id="btn-left" class="mobile-btn mobile-btn-arrow" type="button" aria-label="Nach links">
+                    <span class="mobile-btn-icon">←</span>
+                </button>
+
+                <button id="btn-right" class="mobile-btn mobile-btn-arrow" type="button" aria-label="Nach rechts">
+                    <span class="mobile-btn-icon">→</span>
+                </button>
             </div>
 
-            <div class="mobile-controls-group">
-                <button id="btn-jump" class="mobile-btn" type="button">⤒</button>
-                <button id="btn-throw" class="mobile-btn" type="button">
-                    <img src="./assets/img/6_salsa_bottle/salsa_bottle.png" alt="salsa bottle" draggable="false">
+            <div class="mobile-controls-group mobile-controls-right">
+                <button id="btn-jump" class="mobile-btn mobile-btn-action" type="button" aria-label="Springen">
+                    <span class="mobile-btn-icon">↑</span>
+                </button>
+
+                <button id="btn-throw" class="mobile-btn mobile-btn-action" type="button" aria-label="Angriff">
+                    <span class="mobile-btn-icon">⚔️</span>
                 </button>
             </div>
         </div>

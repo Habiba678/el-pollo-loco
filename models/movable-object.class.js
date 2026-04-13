@@ -3,8 +3,8 @@
  * and state handling for health and animations.
  */
 class MovableObject extends DrawableObject {
-    x = 760
-    y = 200
+    x = 760;
+    y = 200;
     speed = 0.15;
     otherDirection = false;
     speedY = 0;

@@ -127,19 +127,55 @@ class World {
      * @returns {void}
      */
     checkCollisions() {
-        this.level.enemies.forEach((enemy) => {
-            if (this.character.isColliding(enemy)) {
-                this.character.hit();
-                this.statusBarHealth.setPercentage(this.character.energy);
+        this.level.enemies.forEach((enemy, index) => {
+            if (!this.character.isColliding(enemy)) {
+                return;
+            }
+
+            if (this.isChickenHitFromAbove(enemy)) {
+                if (typeof enemy.die === 'function') {
+                    enemy.die();
+                }
+
+                this.character.speedY = 20;
 
                 if (this.gameAudio) {
-                    this.gameAudio.playCharacterHit();
+                    this.gameAudio.playEnemyKill();
                 }
+
+                setTimeout(() => {
+                    this.level.enemies.splice(index, 1);
+                }, 250);
+
+                return;
+            }
+
+            this.character.hit();
+            this.statusBarHealth.setPercentage(this.character.energy);
+
+            if (this.gameAudio) {
+                this.gameAudio.playCharacterHit();
             }
         });
 
         this.checkBottleCollection();
         this.checkCoinCollection();
+    }
+
+    /**
+     * Checks whether the character hits an enemy from above while falling.
+     *
+     * @param {MovableObject} enemy Enemy object.
+     * @returns {boolean}
+     */
+    isChickenHitFromAbove(enemy) {
+        const characterBottom = this.character.y + this.character.height - (this.character.offset?.bottom || 0);
+        const enemyTop = enemy.y + (enemy.offset?.top || 0);
+
+        const isFalling = this.character.speedY < 0;
+        const isAboveEnemy = characterBottom <= enemyTop + 25;
+
+        return isFalling && isAboveEnemy;
     }
 
     /**

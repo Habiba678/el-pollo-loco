@@ -40,6 +40,7 @@ canvas {
     max-width: 720px;
     height: 480px;
 }
+
 .back-to-start-btn,
 .nochmal-btn {
     position: absolute;
@@ -157,40 +158,54 @@ body.touch-device .mobile-controls {
 
 .mobile-controls-group {
     display: flex;
-    gap: 30px;
+    gap: 14px;
+}
+
+.mobile-controls-left,
+.mobile-controls-right {
+    display: flex;
+    gap: 14px;
 }
 
 .mobile-btn {
-    width: 46px;
-    height: 46px;
+    width: 54px;
+    height: 54px;
     border-radius: 50%;
     border: none;
-    font-size: 24px;
     display: flex;
     justify-content: center;
     align-items: center;
-    background-color: #ffffff8f;
+    background: rgba(255, 255, 255, 0.92);
+    color: #6e5d5a;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.18);
     touch-action: none;
     -webkit-user-select: none;
     user-select: none;
     -webkit-touch-callout: none;
     -webkit-user-drag: none;
+    font: inherit;
+    pointer-events: auto;
 }
 
-.mobile-btn img {
-    width: 56px;
-    height: 56px;
-    border-radius: 50%;
-    border: none;
+.mobile-btn:active {
+    transform: scale(0.96);
+}
+
+.mobile-btn-icon {
+    font-size: 26px;
+    line-height: 1;
     display: flex;
     justify-content: center;
     align-items: center;
-    transform: rotate(45deg);
     pointer-events: none;
-    -webkit-user-select: none;
-    user-select: none;
-    -webkit-touch-callout: none;
-    -webkit-user-drag: none;
+}
+
+.mobile-btn-arrow {
+    background: rgba(255, 255, 255, 0.92);
+}
+
+.mobile-btn-action {
+    background: rgba(255, 255, 255, 0.92);
 }
 
 #orientationOverlay {
@@ -313,11 +328,10 @@ body.touch-device .mobile-controls {
     background: transparent;
 }
 
-@media only screen and (max-width: 1440px) and (pointer: coarse) {
-    canvas {
-        width: 100vw;
-        height: 100vh;
-        max-width: none;
+@media only screen and (pointer: coarse) {
+    body {
+        padding: 0;
+        overflow: hidden;
     }
 
     h1 {
@@ -325,15 +339,22 @@ body.touch-device .mobile-controls {
     }
 
     .game-container {
-        width: 100vw;
-        max-width: none;
+        position: relative;
+        width: min(100vw, calc(100vh * 1.5));
+        height: min(100vh, calc(100vw / 1.5));
+        max-width: 720px;
+        max-height: 480px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
     }
 
-    .mobile-controls {
-        display: flex;
-        position: absolute;
-        bottom: 17px;
-        max-width: 99vw;
+    canvas {
+        width: 100%;
+        height: 100%;
+        max-width: 720px;
+        max-height: 480px;
+        display: block;
     }
 
     .desktop-only {
@@ -345,97 +366,44 @@ body.touch-device .mobile-controls {
     }
 
     .top-info-bar {
-        top: 36px;
-        right: 18px;
+        top: 14px;
+        right: 14px;
         left: auto;
         display: flex;
         flex-direction: column;
         align-items: flex-end;
-        gap: 12px;
-    }
-}
-
-@media only screen and (max-width: 768px) and (pointer: coarse) {
-    canvas {
-        width: 100vw;
-        height: 100vh;
-        max-width: none;
-    }
-
-    h1 {
-        display: none;
-    }
-
-    .game-container {
-        width: 100vw;
-        max-width: none;
+        gap: 10px;
+        z-index: 50;
     }
 
     .mobile-controls {
         display: flex;
         position: absolute;
-        bottom: 17px;
-        max-width: 99vw;
-    }
-
-    .desktop-only {
-        display: none;
-    }
-
-    .mobile-only {
-        display: block;
-    }
-
-    .top-info-bar {
-        top: 36px;
-        right: 18px;
-        left: auto;
-        display: flex;
-        flex-direction: column;
-        align-items: flex-end;
-        gap: 12px;
-    }
-}
-
-@media only screen and (max-width: 480px) and (pointer: coarse) {
-    canvas {
-        width: 100vw;
-        height: 100vh;
+        left: 0;
+        right: 0;
+        bottom: 10px;
+        width: 100%;
         max-width: none;
-    }
-
-    h1 {
-        display: none;
-    }
-
-    .game-container {
-        width: 100vw;
-        max-width: none;
-    }
-
-    .mobile-controls {
-        display: flex;
-        position: absolute;
-        bottom: 17px;
-        max-width: 99vw;
-    }
-
-    .desktop-only {
-        display: none;
-    }
-
-    .mobile-only {
-        display: block;
-    }
-
-    .top-info-bar {
-        top: 36px;
-        right: 18px;
-        left: auto;
-        display: flex;
-        flex-direction: column;
+        padding: 0 14px;
+        box-sizing: border-box;
+        justify-content: space-between;
         align-items: flex-end;
-        gap: 12px;
+        z-index: 60;
+        pointer-events: none;
+    }
+
+    .mobile-controls-group {
+        pointer-events: auto;
+    }
+
+    .mobile-btn {
+        width: 52px;
+        height: 52px;
+        pointer-events: auto;
+    }
+
+    .mobile-btn-icon {
+        font-size: 26px;
     }
 
     .overlay-panel {
