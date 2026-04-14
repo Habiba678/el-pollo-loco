@@ -1,6 +1,3 @@
-/**
- * Sets up the first level.
- */
 const level1 = new Level(
     [
         new ChickenSmall(),

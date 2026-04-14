@@ -77,9 +77,9 @@ class Character extends MovableObject {
     airSequenceOpen = false;
     speed = 10;
 
-    /**
-     * Loads sprite collections, enables gravity and starts the recurring updates.
-     */
+    knockbackActive = false;
+    knockbackInterval = null;
+
     constructor() {
         super().loadImage('./assets/img/2_character_pepe/1_idle/idle/I-1.png');
         this.loadImages(this.baseRestSprites);
@@ -92,11 +92,6 @@ class Character extends MovableObject {
         this.animation();
     }
 
-    /**
-     * Runs the character update cycle for movement, camera tracking
-     * and visual state switching.
-     * @returns {void}
-     */
     animation() {
         setInterval(() => {
             if (!this.world || this.world.gameOver) return;
@@ -118,11 +113,11 @@ class Character extends MovableObject {
         }, 250);
     }
 
-    /**
-     * Evaluates left and right input and applies horizontal movement.
-     * @returns {void}
-     */
     processSideInput() {
+        if (this.knockbackActive) {
+            return;
+        }
+
         if (this.world.keyboard.RIGHT && this.x < this.world.level.level_end_x) {
             this.moveRight();
             this.otherDirection = false;
@@ -138,29 +133,20 @@ class Character extends MovableObject {
         }
     }
 
-    /**
-     * Starts a jump when the jump key is pressed on solid ground.
-     * @returns {void}
-     */
     processJumpInput() {
+        if (this.knockbackActive) {
+            return;
+        }
+
         if (this.world.keyboard.SPACE && !this.isAboveGround()) {
             this.jump();
             this.resetStillTimer();
         }
     }
 
-    /**
-     * Chooses the active animation for defeat, damage, air state or walking.
-     * @returns {void}
-     */
     updateActionVisuals() {
         if (this.isDead()) {
             this.playAnimation(this.endStateSprites);
-            return;
-        }
-
-        if (this.isHurt()) {
-            this.playAnimation(this.damageSprites);
             return;
         }
 
@@ -169,20 +155,21 @@ class Character extends MovableObject {
             return;
         }
 
+        if (this.isHurt()) {
+            this.playAnimation(this.damageSprites);
+            return;
+        }
+
         this.airFramePointer = 0;
         this.airSequenceOpen = false;
 
-        if (this.world.keyboard.RIGHT || this.world.keyboard.LEFT) {
+        if (this.world.keyboard.RIGHT || this.world.keyboard.LEFT || this.knockbackActive) {
             this.playAnimation(this.travelSprites);
         }
     }
 
-    /**
-     * Handles the quiet standing states and switches later into the longer rest cycle.
-     * @returns {void}
-     */
     updateRestVisuals() {
-        const movingSideways = this.world.keyboard.LEFT || this.world.keyboard.RIGHT;
+        const movingSideways = this.world.keyboard.LEFT || this.world.keyboard.RIGHT || this.knockbackActive;
         const tryingJump = this.world.keyboard.SPACE;
         const currentlyAirborne = this.isAboveGround();
         const blockedByState = this.isDead() || this.isHurt();
@@ -200,18 +187,10 @@ class Character extends MovableObject {
         }
     }
 
-    /**
-     * Clears the standing timer after movement or another active input.
-     * @returns {void}
-     */
     resetStillTimer() {
         this.stillTimer = 0;
     }
 
-    /**
-     * Advances through the airborne sprite sequence while the figure is in the air.
-     * @returns {void}
-     */
     playAirSequence() {
         if (!this.airSequenceOpen) {
             this.airSequenceOpen = true;
@@ -227,11 +206,31 @@ class Character extends MovableObject {
         }
     }
 
-    /**
-     * Applies upward force to begin a jump movement.
-     * @returns {void}
-     */
     jump() {
         this.speedY = 30;
+    }
+
+    startKnockback(pushDistance = 140, jumpStrength = 28, steps = 12) {
+        if (this.knockbackInterval) {
+            clearInterval(this.knockbackInterval);
+            this.knockbackInterval = null;
+        }
+
+        this.knockbackActive = true;
+        this.speedY = jumpStrength;
+
+        const stepDistance = pushDistance / steps;
+        let remainingSteps = steps;
+
+        this.knockbackInterval = setInterval(() => {
+            this.x = Math.max(0, this.x - stepDistance);
+            remainingSteps--;
+
+            if (remainingSteps <= 0) {
+                clearInterval(this.knockbackInterval);
+                this.knockbackInterval = null;
+                this.knockbackActive = false;
+            }
+        }, 1000 / 60);
     }
 }

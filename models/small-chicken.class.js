@@ -1,16 +1,15 @@
 /**
- * Represents the smaller chicken enemy with its own size,
- * walking cycle and a normal ground movement.
+ * Represents the smaller chicken enemy.
  */
 class ChickenSmall extends MovableObject {
     x;
-    y = 400;
-    groundLevel = 400;
-    width = 60;
-    height = 40;
-    offset = { top: 3, bottom: 3, left: 5, right: 5 };
+    y = 385;
+    groundLevel = 385;
+    width = 70;
+    height = 55;
+    offset = { top: 2, bottom: 2, left: 4, right: 4 };
     dead = false;
-    speed = 0.35;
+    speed = 0.25 + Math.random() * 0.35;
 
     walkSprites = [
         './assets/img/3_enemies_chicken/chicken_small/1_walk/1_w.png',

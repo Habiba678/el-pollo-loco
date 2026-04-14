@@ -3,6 +3,7 @@ class EndbossManager {
         this.world = world;
         this.jumpCooldown = false;
         this.lastBossHitTime = 0;
+        this.hitPauseActive = false;
     }
 
     get endboss() {
@@ -23,15 +24,11 @@ class EndbossManager {
             boss.isActive = true;
         }
 
-        if (!boss.isActive) {
+        if (!boss.isActive || this.hitPauseActive) {
             return;
         }
 
         boss.moveTowardCharacter(character.x);
-
-        if (distance < 150 && !this.jumpCooldown && !boss.isJumpAttacking) {
-            this.triggerJumpAttack();
-        }
     }
 
     triggerJumpAttack() {
@@ -89,22 +86,33 @@ class EndbossManager {
             return;
         }
 
-        if (!this.world.character.isColliding(boss)) {
+        const character = this.world.character;
+
+        if (!character.isColliding(boss)) {
             return;
         }
 
-        if (this.world.character.isHurt()) {
+        if (character.isHurt() || this.hitPauseActive) {
             return;
         }
 
-        this.world.character.hit();
-        this.world.statusBarHealth.setPercentage(this.world.character.energy);
+        character.hit();
+        this.world.statusBarHealth.setPercentage(character.energy);
 
-        this.world.character.speedY = 10;
-        this.world.character.x = Math.max(0, this.world.character.x - 35);
+        const maxCharacterX = boss.x - character.width - 10;
+        if (character.x > maxCharacterX) {
+            character.x = maxCharacterX;
+        }
+
+        this.hitPauseActive = true;
+        character.startKnockback(140, 28, 12);
 
         if (this.world.gameAudio) {
             this.world.gameAudio.playCharacterHit();
         }
+
+        setTimeout(() => {
+            this.hitPauseActive = false;
+        }, 350);
     }
 }

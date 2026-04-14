@@ -18,6 +18,9 @@ body.overlay-open {
 
 h1 {
     margin: 0 0 12px 0;
+    font-size: 50px;
+    
+    
 }
 
 button {
@@ -39,6 +42,7 @@ canvas {
     width: 100%;
     max-width: 720px;
     height: 480px;
+    border-radius: 20px;
 }
 
 .back-to-start-btn,
@@ -327,6 +331,7 @@ body.touch-device .mobile-controls {
 .overlay-scroll-area::-webkit-scrollbar-track {
     background: transparent;
 }
+
 
 @media only screen and (pointer: coarse) {
     body {
