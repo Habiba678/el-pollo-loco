@@ -24,7 +24,7 @@ class ThrowableObject extends MovableObject {
         this.width = 50;
         this.height = 60;
         this.breakCallback = breakCallback;
-        this.trow(x, y, otherDirection);
+        this.throw(x, y, otherDirection);
     }
 
     /**
@@ -35,7 +35,7 @@ class ThrowableObject extends MovableObject {
      * @param {boolean} otherDirection Throw direction.
      * @returns {void}
      */
-    trow(x, y, otherDirection) {
+    throw(x, y, otherDirection) {
         this.x = x;
         this.y = y;
         this.speedY = 30;

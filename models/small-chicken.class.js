@@ -1,6 +1,6 @@
 /**
  * Represents the smaller chicken enemy with its own size,
- * walking cycle and a light random jump behavior.
+ * walking cycle and a normal ground movement.
  */
 class ChickenSmall extends MovableObject {
     x;
@@ -10,7 +10,7 @@ class ChickenSmall extends MovableObject {
     height = 40;
     offset = { top: 3, bottom: 3, left: 5, right: 5 };
     dead = false;
-    speed = 0.1 + Math.random() * 0.45;
+    speed = 0.35;
 
     walkSprites = [
         './assets/img/3_enemies_chicken/chicken_small/1_walk/1_w.png',
@@ -20,29 +20,18 @@ class ChickenSmall extends MovableObject {
 
     deadSprite = './assets/img/3_enemies_chicken/chicken_small/2_dead/dead.png';
 
-    /**
-     * Loads the image set, places the enemy in the level
-     * and starts movement plus animation updates.
-     */
     constructor() {
         super().loadImage('./assets/img/3_enemies_chicken/chicken_small/1_walk/1_w.png');
         this.loadImages(this.walkSprites);
         this.loadImages([this.deadSprite]);
         this.x = 560 + Math.random() * 560;
-        this.applyGravity();
         this.animation();
     }
 
-    /**
-     * Runs the movement loop and the walking animation loop.
-     *
-     * @returns {void}
-     */
     animation() {
         setInterval(() => {
             if (!this.dead) {
                 this.moveLeft();
-                this.tryRandomJump(0.006, 10);
             }
         }, 1000 / 60);
 
@@ -53,11 +42,6 @@ class ChickenSmall extends MovableObject {
         }, 200);
     }
 
-    /**
-     * Switches the enemy to its defeated state.
-     *
-     * @returns {void}
-     */
     die() {
         this.dead = true;
         this.speed = 0;

@@ -12,6 +12,7 @@ class World {
     camera_x = 0;
     gameOver = false;
     gameLoop = null;
+    endbossManager;
 
     statusBarHealth = new StatusBar('health', 20, 20);
     statusBarBottle = new StatusBar('bottle', 20, 60);
@@ -40,37 +41,28 @@ class World {
     coinsCollected = 0;
     totalCoins = this.coins.length;
 
-    /**
-     * Sets up the world and starts drawing and update cycles.
-     *
-     * @param {HTMLCanvasElement} canvas Canvas element used for the game.
-     * @param {Keyboard} keyboard Keyboard input state object.
-     * @param {SoundManager} gameAudio Sound manager instance.
-     */
     constructor(canvas, keyboard, gameAudio) {
         this.ctx = canvas.getContext('2d');
         this.canvas = canvas;
         this.keyboard = keyboard;
         this.gameAudio = gameAudio;
+        this.endbossManager = new EndbossManager(this);
         this.setWorld();
         this.draw();
         this.run();
     }
 
-    /**
-     * Links the character to the current world instance.
-     *
-     * @returns {void}
-     */
     setWorld() {
         this.character.world = this;
+
+        this.level.enemies.forEach((enemy) => {
+            if (enemy instanceof Endboss) {
+                enemy.world = this;
+                this.statusBarEndboss.setPercentage(enemy.lifePoints);
+            }
+        });
     }
 
-    /**
-     * Repeats collision checks, throw checks and bar updates.
-     *
-     * @returns {void}
-     */
     run() {
         this.gameLoop = setInterval(() => {
             if (this.gameOver) {
@@ -78,8 +70,14 @@ class World {
                 return;
             }
 
+            this.endbossManager.update();
+            this.endbossManager.handleBossCollision();
+
             this.checkCollisions();
             this.checkThrowObjects();
+            this.checkThrowableObjectCollisions();
+            this.removeMarkedThrowableObjects();
+
             this.statusBarHealth.setPercentage(this.character.energy);
 
             if (this.character.energy <= 0) {
@@ -91,44 +89,43 @@ class World {
                     }
                 }, 250);
             }
-        }, 200);
+        }, 1000 / 60);
     }
 
-    /**
-     * Throws a bottle when the throw key is pressed
-     * and at least one collected bottle is available.
-     *
-     * @returns {void}
-     */
     checkThrowObjects() {
         if (this.gameOver) {
             return;
         }
 
         if (this.keyboard.D && this.bottlesCollected > 0) {
-            let bottle = new ThrowableObject(this.character.x + 100, this.character.y + 100);
+            const bottle = new ThrowableObject(
+                this.character.x + 100,
+                this.character.y + 100,
+                this.character.otherDirection,
+                () => {
+                    if (this.gameAudio) {
+                        this.gameAudio.playBottleBreak();
+                    }
+                }
+            );
+
             this.throwableObjects.push(bottle);
             this.bottlesCollected--;
 
             const percentage = Math.min(this.bottlesCollected * 20, 100);
             this.statusBarBottle.setBottlePercentage(percentage);
 
-            if (this.gameAudio) {
-                this.gameAudio.playEndbossHit();
-            }
-
             this.keyboard.D = false;
         }
     }
 
-    /**
-     * Checks enemy contact and collectible pickups.
-     *
-     * @returns {void}
-     */
     checkCollisions() {
         this.level.enemies.forEach((enemy, index) => {
             if (!this.character.isColliding(enemy)) {
+                return;
+            }
+
+            if (enemy instanceof Endboss) {
                 return;
             }
 
@@ -137,7 +134,7 @@ class World {
                     enemy.die();
                 }
 
-                this.character.speedY = 20;
+                this.character.speedY = 24;
 
                 if (this.gameAudio) {
                     this.gameAudio.playEnemyKill();
@@ -150,11 +147,13 @@ class World {
                 return;
             }
 
-            this.character.hit();
-            this.statusBarHealth.setPercentage(this.character.energy);
+            if (!this.character.isHurt()) {
+                this.character.hit();
+                this.statusBarHealth.setPercentage(this.character.energy);
 
-            if (this.gameAudio) {
-                this.gameAudio.playCharacterHit();
+                if (this.gameAudio) {
+                    this.gameAudio.playCharacterHit();
+                }
             }
         });
 
@@ -162,28 +161,75 @@ class World {
         this.checkCoinCollection();
     }
 
-    /**
-     * Checks whether the character hits an enemy from above while falling.
-     *
-     * @param {MovableObject} enemy Enemy object.
-     * @returns {boolean}
-     */
+    checkThrowableObjectCollisions() {
+        for (let i = this.throwableObjects.length - 1; i >= 0; i--) {
+            const throwable = this.throwableObjects[i];
+
+            if (throwable.markedForRemoval || throwable.broken) {
+                continue;
+            }
+
+            for (let j = this.level.enemies.length - 1; j >= 0; j--) {
+                const enemy = this.level.enemies[j];
+
+                if (!throwable.isColliding(enemy)) {
+                    continue;
+                }
+
+                throwable.breakBottle(false);
+
+                if (enemy instanceof Endboss) {
+                    this.endbossManager.handleBossHit();
+
+                    if (this.gameAudio) {
+                        this.gameAudio.playBottleBreak();
+                    }
+
+                    break;
+                }
+
+                if (typeof enemy.die === 'function') {
+                    enemy.die();
+                }
+
+                if (this.gameAudio) {
+                    this.gameAudio.playEnemyKill();
+                    this.gameAudio.playBottleBreak();
+                }
+
+                setTimeout(() => {
+                    this.level.enemies.splice(j, 1);
+                }, 250);
+
+                break;
+            }
+        }
+    }
+
+    removeMarkedThrowableObjects() {
+        for (let i = this.throwableObjects.length - 1; i >= 0; i--) {
+            const throwable = this.throwableObjects[i];
+
+            if (!throwable.markedForRemoval) {
+                continue;
+            }
+
+            throwable.dispose();
+            this.throwableObjects.splice(i, 1);
+        }
+    }
+
     isChickenHitFromAbove(enemy) {
         const characterBottom = this.character.y + this.character.height - (this.character.offset?.bottom || 0);
         const enemyTop = enemy.y + (enemy.offset?.top || 0);
 
         const isFalling = this.character.speedY < 0;
-        const isAboveEnemy = characterBottom <= enemyTop + 25;
+        const hitTolerance = enemy instanceof ChickenSmall ? 95 : 55;
+        const isAboveEnemy = characterBottom <= enemyTop + hitTolerance;
 
         return isFalling && isAboveEnemy;
     }
 
-    /**
-     * Removes collected bottles from the world
-     * and updates the bottle bar.
-     *
-     * @returns {void}
-     */
     checkBottleCollection() {
         for (let i = this.bottle.length - 1; i >= 0; i--) {
             const bottle = this.bottle[i];
@@ -202,12 +248,6 @@ class World {
         }
     }
 
-    /**
-     * Removes collected coins from the world
-     * and updates the coin bar.
-     *
-     * @returns {void}
-     */
     checkCoinCollection() {
         for (let i = this.coins.length - 1; i >= 0; i--) {
             const coin = this.coins[i];
@@ -229,11 +269,6 @@ class World {
         }
     }
 
-    /**
-     * Draws the background, interface bars and moving game objects.
-     *
-     * @returns {void}
-     */
     draw() {
         if (this.gameOver) {
             return;
@@ -261,43 +296,24 @@ class World {
         });
     }
 
-    /**
-     * Draws each object from a given list.
-     *
-     * @param {Array} objects List of drawable objects.
-     * @returns {void}
-     */
     addObjectsToMap(objects) {
         objects.forEach(o => {
             this.addToMap(o);
         });
     }
 
-    /**
-     * Draws one object and mirrors it if needed.
-     *
-     * @param {MovableObject|DrawableObject} mo Object to render.
-     * @returns {void}
-     */
     addToMap(mo) {
         if (mo.otherDirection) {
             this.flipImage(mo);
         }
 
         mo.draw(this.ctx);
-        // mo.drawFrame(this.ctx);
 
         if (mo.otherDirection) {
             this.flipImageBack(mo);
         }
     }
 
-    /**
-     * Flips an object horizontally before drawing.
-     *
-     * @param {MovableObject|DrawableObject} mo Object to flip.
-     * @returns {void}
-     */
     flipImage(mo) {
         this.ctx.save();
         this.ctx.translate(mo.width, 0);
@@ -305,12 +321,6 @@ class World {
         mo.x = mo.x * -1;
     }
 
-    /**
-     * Restores the normal drawing direction after mirroring.
-     *
-     * @param {MovableObject|DrawableObject} mo Object to restore.
-     * @returns {void}
-     */
     flipImageBack(mo) {
         mo.x = mo.x * -1;
         this.ctx.restore();

@@ -1,6 +1,6 @@
 /**
- * Controls the boss enemy, including patrol movement,
- * attack phases, damage reaction and defeat visuals.
+ * Represents the Endboss enemy.
+ * Handles sprites, movement basics and one jump attack.
  */
 class Endboss extends MovableObject {
     x;
@@ -10,29 +10,12 @@ class Endboss extends MovableObject {
     offset = { top: 60, bottom: 10, left: 25, right: 25 };
 
     lifePoints = 100;
-    speed = 1;
-    patrolSpeed = 1;
-    chaseSpeed = 2.5;
-    attackWindow = 2500;
-    attackTimer = null;
+    speed = 1.1;
+    jumpAttackSpeed = 3.2;
+    world = null;
     isActive = false;
-    isHunting = false;
-    roamLeft;
-    roamRight;
-    walksLeft = true;
-    hitPower = 25;
-
-    hurtCycle = [
-        './assets/img/4_enemie_boss_chicken/4_hurt/G21.png',
-        './assets/img/4_enemie_boss_chicken/4_hurt/G22.png',
-        './assets/img/4_enemie_boss_chicken/4_hurt/G23.png'
-    ];
-
-    deadCycle = [
-        './assets/img/4_enemie_boss_chicken/5_dead/G24.png',
-        './assets/img/4_enemie_boss_chicken/5_dead/G25.png',
-        './assets/img/4_enemie_boss_chicken/5_dead/G26.png'
-    ];
+    isJumpAttacking = false;
+    hitPower = 20;
 
     alertCycle = [
         './assets/img/4_enemie_boss_chicken/2_alert/G5.png',
@@ -52,132 +35,110 @@ class Endboss extends MovableObject {
         './assets/img/4_enemie_boss_chicken/1_walk/G4.png'
     ];
 
-    attackCycle = [
-        './assets/img/4_enemie_boss_chicken/3_attack/G13.png',
-        './assets/img/4_enemie_boss_chicken/3_attack/G14.png',
-        './assets/img/4_enemie_boss_chicken/3_attack/G15.png',
-        './assets/img/4_enemie_boss_chicken/3_attack/G16.png',
-        './assets/img/4_enemie_boss_chicken/3_attack/G17.png',
-        './assets/img/4_enemie_boss_chicken/3_attack/G18.png',
-        './assets/img/4_enemie_boss_chicken/3_attack/G19.png',
-        './assets/img/4_enemie_boss_chicken/3_attack/G20.png'
+    hurtCycle = [
+        './assets/img/4_enemie_boss_chicken/4_hurt/G21.png',
+        './assets/img/4_enemie_boss_chicken/4_hurt/G22.png',
+        './assets/img/4_enemie_boss_chicken/4_hurt/G23.png'
     ];
 
-    /**
-     * Loads all boss image groups and prepares its movement range.
-     */
+    deadCycle = [
+        './assets/img/4_enemie_boss_chicken/5_dead/G24.png',
+        './assets/img/4_enemie_boss_chicken/5_dead/G25.png',
+        './assets/img/4_enemie_boss_chicken/5_dead/G26.png'
+    ];
+
     constructor() {
         super().loadImage(this.alertCycle[0]);
         this.loadImages(this.alertCycle);
         this.loadImages(this.walkCycle);
-        this.loadImages(this.attackCycle);
         this.loadImages(this.hurtCycle);
         this.loadImages(this.deadCycle);
 
-        this.x = 1400 + Math.random() * 500;
-        this.roamLeft = this.x - 200;
-        this.roamRight = this.x + 200;
+        this.x = 2200;
+        this.groundLevel = 140;
+        this.otherDirection = false;
 
+        this.applyGravity();
         this.animate();
     }
 
-    /**
-     * Updates the current boss animation depending on its state.
-     * @returns {void}
-     */
     animate() {
         setInterval(() => {
             if (this.isDead()) {
                 this.playAnimation(this.deadCycle);
-            } else if (this.isHurt()) {
-                this.playAnimation(this.hurtCycle);
-            } else if (this.isHunting) {
-                this.playAnimation(this.attackCycle);
-            } else if (this.isActive) {
-                this.playAnimation(this.walkCycle);
-            } else {
-                this.playAnimation(this.alertCycle);
+                return;
             }
-        }, 200);
+
+            if (this.isHurt()) {
+                this.playAnimation(this.hurtCycle);
+                return;
+            }
+
+            if (this.isActive) {
+                this.playAnimation(this.walkCycle);
+                return;
+            }
+
+            this.playAnimation(this.alertCycle);
+        }, 180);
     }
 
-    /**
-     * Moves the boss either along its patrol route or toward the character.
-     * @param {number} characterX Current x position of the player.
-     * @returns {void}
-     */
-    updateMovement(characterX) {
-        if (this.isDead() || !this.isActive) return;
-
-        if (this.isHunting && typeof characterX === 'number') {
-            this.speed = this.chaseSpeed;
-
-            if (this.x > characterX) {
-                this.moveLeft();
-                this.otherDirection = false;
-            } else {
-                this.moveRight();
-                this.otherDirection = true;
-            }
+    moveTowardCharacter(characterX) {
+        if (this.isDead() || this.isJumpAttacking) {
             return;
         }
 
-        this.handlePatrolPath();
-    }
-
-    /**
-     * Keeps the boss moving between its left and right patrol borders.
-     * @returns {void}
-     */
-    handlePatrolPath() {
-        this.speed = this.patrolSpeed;
-
-        if (this.walksLeft) {
+        if (this.x > characterX + 45) {
             this.moveLeft();
             this.otherDirection = false;
-
-            if (this.x <= this.roamLeft) {
-                this.walksLeft = false;
-            }
-        } else {
-            this.moveRight();
-            this.otherDirection = true;
-
-            if (this.x >= this.roamRight) {
-                this.walksLeft = true;
-            }
         }
     }
 
-    /**
-     * Activates the boss and opens a temporary attack phase.
-     * @returns {void}
-     */
-    startAttackMode() {
-        if (this.isDead()) return;
-
-        this.isActive = true;
-        this.isHunting = true;
-
-        if (this.attackTimer) {
-            clearTimeout(this.attackTimer);
+    triggerJumpAttack() {
+        if (!this.world || this.isDead() || this.isJumpAttacking) {
+            return;
         }
 
-        this.attackTimer = setTimeout(() => {
-            this.isHunting = false;
-            this.attackTimer = null;
-        }, this.attackWindow);
+        this.isJumpAttacking = true;
+        this.speedY = 20;
+
+        const characterX = this.world.character.x;
+        const jumpToRight = this.x < characterX;
+
+        const jumpInterval = setInterval(() => {
+            if (this.isDead()) {
+                clearInterval(jumpInterval);
+                this.isJumpAttacking = false;
+                return;
+            }
+
+            const landed = !this.isAboveGround() && this.speedY === 0;
+
+            if (landed) {
+                clearInterval(jumpInterval);
+                this.isJumpAttacking = false;
+                return;
+            }
+
+            if (jumpToRight) {
+                this.x += this.jumpAttackSpeed;
+                this.otherDirection = true;
+            } else {
+                this.x -= this.jumpAttackSpeed;
+                this.otherDirection = false;
+            }
+        }, 1000 / 60);
     }
 
-    /**
-     * Reduces the boss life value and stores the last hit timestamp.
-     * @returns {void}
-     */
     hit() {
         this.lifePoints = Math.max(0, this.lifePoints - this.hitPower);
 
         if (this.lifePoints > 0) {
             this.lastHit = Date.now();
         }
+    }
+
+    isDead() {
+        return this.lifePoints <= 0;
     }
 }
