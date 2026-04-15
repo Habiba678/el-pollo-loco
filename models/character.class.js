@@ -1,7 +1,4 @@
-/**
- * Represents the player avatar and manages motion,
- * state-based visuals and camera follow updates.
- */
+/** Controls the player character, movement and animations. */
 class Character extends MovableObject {
     x = 100;
     y = 165;
@@ -76,105 +73,101 @@ class Character extends MovableObject {
     airFramePointer = 0;
     airSequenceOpen = false;
     speed = 10;
-
     knockbackActive = false;
     knockbackInterval = null;
 
+    /** Creates the character and loads sprites. */
     constructor() {
         super().loadImage('./assets/img/2_character_pepe/1_idle/idle/I-1.png');
-        this.loadImages(this.baseRestSprites);
-        this.loadImages(this.extendedRestSprites);
-        this.loadImages(this.travelSprites);
-        this.loadImages(this.airborneSprites);
-        this.loadImages(this.endStateSprites);
-        this.loadImages(this.damageSprites);
+        this.loadAllImages();
         this.applyGravity();
         this.animation();
     }
 
+    /** Loads all sprite groups. */
+    loadAllImages() {
+        [
+            this.baseRestSprites,
+            this.extendedRestSprites,
+            this.travelSprites,
+            this.airborneSprites,
+            this.endStateSprites,
+            this.damageSprites
+        ].forEach(images => this.loadImages(images));
+    }
+
+    /** Starts character update intervals. */
     animation() {
-        setInterval(() => {
-            if (!this.world || this.world.gameOver) return;
-
-            this.moveSound.pause();
-            this.processSideInput();
-            this.processJumpInput();
-            this.world.camera_x = -this.x + 100;
-        }, 1000 / 60);
-
-        setInterval(() => {
-            if (!this.world || this.world.gameOver) return;
-            this.updateActionVisuals();
-        }, 60);
-
-        setInterval(() => {
-            if (!this.world || this.world.gameOver) return;
-            this.updateRestVisuals();
-        }, 250);
+        setInterval(() => this.updateMovement(), 1000 / 60);
+        setInterval(() => this.updateActionVisuals(), 60);
+        setInterval(() => this.updateRestVisuals(), 250);
     }
 
+    /** Updates movement and camera. */
+    updateMovement() {
+        if (!this.canUpdate()) return;
+        this.moveSound.pause();
+        this.processSideInput();
+        this.processJumpInput();
+        this.world.camera_x = -this.x + 100;
+    }
+
+    /** Checks if updates may run. */
+    canUpdate() {
+        return this.world && !this.world.gameOver;
+    }
+
+    /** Handles left and right movement. */
     processSideInput() {
-        if (this.knockbackActive) {
-            return;
-        }
-
-        if (this.world.keyboard.RIGHT && this.x < this.world.level.level_end_x) {
-            this.moveRight();
-            this.otherDirection = false;
-            this.moveSound.play();
-            this.resetStillTimer();
-        }
-
-        if (this.world.keyboard.LEFT && this.x > 0) {
-            this.moveLeft();
-            this.otherDirection = true;
-            this.moveSound.play();
-            this.resetStillTimer();
-        }
+        if (this.knockbackActive) return;
+        this.handleMoveRight();
+        this.handleMoveLeft();
     }
 
+    /** Handles movement to the right. */
+    handleMoveRight() {
+        if (!this.world.keyboard.RIGHT || this.x >= this.world.level.level_end_x) return;
+        this.moveRight();
+        this.otherDirection = false;
+        this.moveSound.play();
+        this.resetStillTimer();
+    }
+
+    /** Handles movement to the left. */
+    handleMoveLeft() {
+        if (!this.world.keyboard.LEFT || this.x <= 0) return;
+        this.moveLeft();
+        this.otherDirection = true;
+        this.moveSound.play();
+        this.resetStillTimer();
+    }
+
+    /** Handles jump input. */
     processJumpInput() {
-        if (this.knockbackActive) {
-            return;
-        }
-
-        if (this.world.keyboard.SPACE && !this.isAboveGround()) {
-            this.jump();
-            this.resetStillTimer();
-        }
+        if (this.knockbackActive) return;
+        if (!this.world.keyboard.SPACE || this.isAboveGround()) return;
+        this.jump();
+        this.resetStillTimer();
     }
 
+    /** Updates active animations. */
     updateActionVisuals() {
-        if (this.isDead()) {
-            this.playAnimation(this.endStateSprites);
-            return;
-        }
-
-        if (this.isAboveGround()) {
-            this.playAirSequence();
-            return;
-        }
-
-        if (this.isHurt()) {
-            this.playAnimation(this.damageSprites);
-            return;
-        }
+        if (!this.canUpdate()) return;
+        if (this.isDead()) return this.playAnimation(this.endStateSprites);
+        if (this.isAboveGround()) return this.playAirSequence();
+        if (this.isHurt()) return this.playAnimation(this.damageSprites);
 
         this.airFramePointer = 0;
         this.airSequenceOpen = false;
 
-        if (this.world.keyboard.RIGHT || this.world.keyboard.LEFT || this.knockbackActive) {
+        if (this.isMovingOrKnocked()) {
             this.playAnimation(this.travelSprites);
         }
     }
 
+    /** Updates idle animations. */
     updateRestVisuals() {
-        const movingSideways = this.world.keyboard.LEFT || this.world.keyboard.RIGHT || this.knockbackActive;
-        const tryingJump = this.world.keyboard.SPACE;
-        const currentlyAirborne = this.isAboveGround();
-        const blockedByState = this.isDead() || this.isHurt();
-
-        if (movingSideways || tryingJump || currentlyAirborne || blockedByState) {
+        if (!this.canUpdate() || this.shouldSkipRestAnimation()) {
             this.resetStillTimer();
             return;
         }
@@ -182,40 +175,56 @@ class Character extends MovableObject {
         if (this.stillTimer < 30) {
             this.playAnimation(this.baseRestSprites);
             this.stillTimer++;
-        } else {
-            this.playAnimation(this.extendedRestSprites);
+            return;
         }
+
+        this.playAnimation(this.extendedRestSprites);
     }
 
+    /** Checks if rest animation should be skipped. */
+    shouldSkipRestAnimation() {
+        return this.isMovingOrKnocked() ||
+            this.world.keyboard.SPACE ||
+            this.isAboveGround() ||
+            this.isDead() ||
+            this.isHurt();
+    }
+
+    /** Checks if character is moving sideways or knocked back. */
+    isMovingOrKnocked() {
+        return this.world.keyboard.LEFT ||
+            this.world.keyboard.RIGHT ||
+            this.knockbackActive;
+    }
+
+    /** Resets idle timer. */
     resetStillTimer() {
         this.stillTimer = 0;
     }
 
+    /** Plays jump frame sequence. */
     playAirSequence() {
         if (!this.airSequenceOpen) {
             this.airSequenceOpen = true;
             this.airFramePointer = 0;
         }
 
-        const safeIndex = Math.min(this.airFramePointer, this.airborneSprites.length - 1);
-        const currentSprite = this.airborneSprites[safeIndex];
-        this.img = this.imageCache[currentSprite];
+        const index = Math.min(this.airFramePointer, this.airborneSprites.length - 1);
+        this.img = this.imageCache[this.airborneSprites[index]];
 
         if (this.airFramePointer < this.airborneSprites.length - 1) {
             this.airFramePointer++;
         }
     }
 
+    /** Starts a jump. */
     jump() {
         this.speedY = 30;
     }
 
+    /** Starts a short backward knockback. */
     startKnockback(pushDistance = 140, jumpStrength = 28, steps = 12) {
-        if (this.knockbackInterval) {
-            clearInterval(this.knockbackInterval);
-            this.knockbackInterval = null;
-        }
-
+        this.clearKnockbackInterval();
         this.knockbackActive = true;
         this.speedY = jumpStrength;
 
@@ -227,10 +236,16 @@ class Character extends MovableObject {
             remainingSteps--;
 
             if (remainingSteps <= 0) {
-                clearInterval(this.knockbackInterval);
-                this.knockbackInterval = null;
+                this.clearKnockbackInterval();
                 this.knockbackActive = false;
             }
         }, 1000 / 60);
+    }
+
+    /** Clears running knockback interval. */
+    clearKnockbackInterval() {
+        if (!this.knockbackInterval) return;
+        clearInterval(this.knockbackInterval);
+        this.knockbackInterval = null;
     }
 }

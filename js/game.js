@@ -1,5 +1,5 @@
 /**
- * Handles game setup, menu flow, audio state and canvas controls.
+ * Controls the game flow.
  */
 let canvas;
 let ctx;
@@ -16,10 +16,16 @@ let topInfoBar;
 let isGameRunning = false;
 let isGameFinished = false;
 let audioMuted = false;
-const AUDIO_STORAGE_KEY = 'elpolo.musicMuted';
 let hasPlayerWon = false;
 let lostWithoutBottles = false;
 
+const AUDIO_STORAGE_KEY = 'elpolo.musicMuted';
+const KEY_BINDINGS = { 37: 'LEFT', 39: 'RIGHT', 38: 'UP', 40: 'DOWN', 32: 'SPACE', 68: 'D' };
+
+/**
+ * Starts the game setup.
+ * @returns {void}
+ */
 function init() {
     canvas = document.getElementById('canvas');
     ctx = canvas.getContext('2d');
@@ -27,219 +33,119 @@ function init() {
     restartButton = document.getElementById('nochmalBtn');
     topInfoBar = document.getElementById('topInfoBar');
 
-    setupManagers();
-    setupAudio();
-    renderStartView();
-    setupMobileControls();
-    mobileControls.checkOrientation();
-    refreshOverlayButtons();
-    bindBackButton();
-    bindRestartButton();
-    bindRuntimeEvents();
-}
-
-function setupManagers() {
-    gameAudio = new SoundManager(AUDIO_STORAGE_KEY);
-    screenView = new GameScreen();
-    screenView.setCanvas(canvas, ctx);
-}
-
-function setupMobileControls() {
-    mobileControls = new MobilScreen(keyboard, resetKeyboardState);
-    mobileControls.init();
-}
-
-function setupAudio() {
+    gameAudio = new AudioManager(AUDIO_STORAGE_KEY);
     gameAudio.init();
     audioMuted = gameAudio.loadMutedState();
+    gameAudio.initUnlock(() => { if (!audioMuted && isGameRunning) gameAudio.playGame(); });
 
-    gameAudio.initUnlock(() => {
-        if (!audioMuted && isGameRunning) {
-            gameAudio.playGame();
-        }
-    });
-}
+    screenView = new GameScreen();
+    screenView.setCanvas(canvas, ctx);
 
-function bindRuntimeEvents() {
+    mobileControls = new MobilScreen(keyboard, resetKeyboardState);
+    mobileControls.init();
+
+    renderStartView();
+    mobileControls.checkOrientation();
+    refreshOverlayButtons();
+
+    if (backToStartButton) backToStartButton.addEventListener('click', returnToStartScreen);
+    if (restartButton) restartButton.addEventListener('click', restartRoundDirectly);
+
     canvas.addEventListener('click', handleCanvasClick);
-    canvas.addEventListener('mousemove', handleCanvasMouseMove);
-    canvas.addEventListener('mouseleave', handleCanvasMouseLeave);
+    canvas.addEventListener('mousemove', event => screenView.handleCanvasMouseMove(event, getScreenState()));
+    canvas.addEventListener('mouseleave', () => screenView.resetCanvasCursor());
 
-    window.addEventListener('resize', handleResize);
-    window.addEventListener('fullscreenchange', handleResize);
-    window.addEventListener('webkitfullscreenchange', handleResize);
-    window.addEventListener('msfullscreenchange', handleResize);
+    ['resize', 'fullscreenchange', 'webkitfullscreenchange', 'msfullscreenchange']
+        .forEach(type => window.addEventListener(type, handleResize));
 
     window.addEventListener('click', handleOutsideMenuClick);
     window.addEventListener('keydown', handleOverlayEscapeKey);
+    window.addEventListener('keydown', event => setKeyState(event, true));
+    window.addEventListener('keyup', event => setKeyState(event, false));
 }
 
-function playCurrentSceneAudio() {
-    const sceneName = hasPlayerWon
-        ? 'win'
-        : lostWithoutBottles
-            ? 'noBottles'
-            : isGameFinished
-                ? 'gameOver'
-                : 'game';
-
-    gameAudio.playScene(sceneName);
+function setKeyState(event, pressed) {
+    const key = KEY_BINDINGS[event.keyCode];
+    if (key) keyboard[key] = pressed;
 }
 
-function bindBackButton() {
-    if (!backToStartButton) {
-        return;
-    }
-
-    backToStartButton.addEventListener('click', returnToStartScreen);
+function resetKeyboardState() {
+    Object.values(KEY_BINDINGS).forEach(key => keyboard[key] = false);
 }
 
-function bindRestartButton() {
-    if (!restartButton) {
-        return;
-    }
-
-    restartButton.addEventListener('click', restartRoundDirectly);
+function getScreenState() {
+    return { gameStarted: isGameRunning, gameOver: isGameFinished };
 }
 
-function refreshTopInfoBar() {
-    if (!topInfoBar) {
-        return;
-    }
-
-    const shouldShow = !isGameRunning && !isGameFinished;
-    topInfoBar.classList.toggle('hidden-bar', !shouldShow);
+function getSceneAudioName() {
+    if (hasPlayerWon) return 'win';
+    if (lostWithoutBottles) return 'noBottles';
+    return isGameFinished ? 'gameOver' : 'game';
 }
 
 function refreshOverlayButtons() {
-    placeOverlayButtons();
-    refreshTopInfoBar();
-
-    if (backToStartButton) {
-        backToStartButton.style.display = isGameFinished ? 'block' : 'none';
-    }
-
-    if (restartButton) {
-        restartButton.style.display = isGameFinished ? 'block' : 'none';
-    }
-}
-
-function placeOverlayButtons() {
-    if (!canvas) {
-        return;
-    }
+    if (topInfoBar) topInfoBar.classList.toggle('hidden-bar', isGameRunning || isGameFinished);
 
     const gameContainer = document.getElementById('gameContainer');
-    if (!gameContainer) {
-        return;
-    }
+    if (canvas && gameContainer) {
+        const canvasRect = canvas.getBoundingClientRect();
+        const containerRect = gameContainer.getBoundingClientRect();
+        const top = canvasRect.top - containerRect.top;
+        const centerX = canvasRect.left - containerRect.left + canvasRect.width / 2;
 
-    const canvasRect = canvas.getBoundingClientRect();
-    const containerRect = gameContainer.getBoundingClientRect();
+        [backToStartButton, restartButton].forEach(button => {
+            if (!button) return;
+            button.style.left = `${centerX}px`;
+            button.style.transform = 'translateX(-50%)';
+        });
 
-    const canvasLeftInsideContainer = canvasRect.left - containerRect.left;
-    const canvasTopInsideContainer = canvasRect.top - containerRect.top;
-    const canvasCenterXInsideContainer = canvasLeftInsideContainer + canvasRect.width / 2;
-
-    if (backToStartButton) {
-        backToStartButton.style.left = `${canvasCenterXInsideContainer}px`;
-        backToStartButton.style.transform = 'translateX(-50%)';
-    }
-
-    if (restartButton) {
-        restartButton.style.left = `${canvasCenterXInsideContainer}px`;
-        restartButton.style.transform = 'translateX(-50%)';
-    }
-
-    if (isGameFinished) {
-        const bottomOffset = 118;
-        const gap = 10;
-
-        if (restartButton) {
-            restartButton.style.top = `${canvasTopInsideContainer + canvasRect.height - bottomOffset}px`;
+        if (isGameFinished) {
+            const restartTop = top + canvasRect.height - 118;
+            if (restartButton) restartButton.style.top = `${restartTop}px`;
+            if (backToStartButton) backToStartButton.style.top = `${restartTop + 48}px`;
+        } else {
+            if (backToStartButton) backToStartButton.style.top = `${top + 18}px`;
+            if (restartButton) restartButton.style.top = `${top + 68}px`;
         }
-
-        if (backToStartButton) {
-            backToStartButton.style.top = `${canvasTopInsideContainer + canvasRect.height - bottomOffset + 38 + gap}px`;
-        }
-
-        return;
     }
 
-    if (backToStartButton) {
-        backToStartButton.style.top = `${canvasTopInsideContainer + 18}px`;
-    }
-
-    if (restartButton) {
-        restartButton.style.top = `${canvasTopInsideContainer + 68}px`;
-    }
+    if (backToStartButton) backToStartButton.style.display = isGameFinished ? 'block' : 'none';
+    if (restartButton) restartButton.style.display = isGameFinished ? 'block' : 'none';
 }
 
 function stopActiveWorld() {
-    if (!world) {
-        return;
-    }
-
-    if (gameAudio) {
-        gameAudio.stopGameplaySounds();
-    }
-
+    if (!world) return;
+    if (gameAudio) gameAudio.stopGameplaySounds();
     world.gameOver = true;
     world = null;
 }
 
-function resetKeyboardState() {
-    keyboard.LEFT = false;
-    keyboard.RIGHT = false;
-    keyboard.UP = false;
-    keyboard.DOWN = false;
-    keyboard.SPACE = false;
-    keyboard.D = false;
-}
-
-function returnToStartScreen() {
+function resetGameFlags() {
     isGameRunning = false;
     isGameFinished = false;
     hasPlayerWon = false;
     lostWithoutBottles = false;
+}
 
+function returnToStartScreen() {
+    resetGameFlags();
     closeAllPanels();
     stopActiveWorld();
     resetKeyboardState();
 
-    if (gameAudio) {
-        gameAudio.stopTracks(['game', 'gameOver', 'win', 'noBottles']);
-    }
-
-    if (ctx && canvas) {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-    }
+    if (gameAudio) gameAudio.stopTracks(['game', 'gameOver', 'win', 'noBottles']);
+    if (ctx && canvas) ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     renderStartView();
 }
 
 function handleCanvasClick(event) {
-    screenView.handleCanvasClick(
-        event,
-        { gameStarted: isGameRunning, gameOver: isGameFinished },
-        {
-            startGame: launchGame,
-            restartGame: restartRoundDirectly,
-            toggleMusic: switchAudioMode,
-            toggleFullscreen: () => mobileControls.toggleFullscreen(),
-        }
-    );
-}
-
-function handleCanvasMouseMove(event) {
-    screenView.handleCanvasMouseMove(event, {
-        gameStarted: isGameRunning,
-        gameOver: isGameFinished,
+    screenView.handleCanvasClick(event, getScreenState(), {
+        startGame: launchGame,
+        restartGame: restartRoundDirectly,
+        toggleMusic: switchAudioMode,
+        toggleFullscreen: () => mobileControls.toggleFullscreen()
     });
-}
-
-function handleCanvasMouseLeave() {
-    screenView.resetCanvasCursor();
 }
 
 function handleResize() {
@@ -260,10 +166,13 @@ function launchGame() {
     resetKeyboardState();
 
     world = new World(canvas, keyboard, gameAudio);
-
     mobileControls.checkOrientation();
-    gameAudio.stopTracks(['gameOver', 'win', 'noBottles']);
-    gameAudio.playGame();
+
+    if (gameAudio) {
+        gameAudio.stopTracks(['gameOver', 'win', 'noBottles']);
+        gameAudio.playGame();
+    }
+
     refreshOverlayButtons();
 }
 
@@ -274,223 +183,107 @@ function restartRoundDirectly() {
 }
 
 function renderStartView() {
+    resetGameFlags();
     refreshOverlayButtons();
     screenView.showStartScreen(audioMuted);
 }
 
-function refreshAudioIcon() {
-    if (!screenView) {
-        return;
-    }
-
-    screenView.refreshSpeakerIcon(audioMuted);
-}
-
 function switchAudioMode() {
+    if (!gameAudio) return;
     audioMuted = gameAudio.toggleMute();
-
-    if (audioMuted) {
-        gameAudio.pauseAll();
-    } else {
-        playCurrentSceneAudio();
-    }
-
-    refreshAudioIcon();
+    audioMuted ? gameAudio.pauseAll() : gameAudio.playScene(getSceneAudioName());
+    if (screenView) screenView.refreshSpeakerIcon(audioMuted);
 }
 
-function openLegalOverlay() {
-    const overlay = document.getElementById('legalOverlay');
+function openOverlay(id) {
+    const overlay = document.getElementById(id);
     closeInfoMenu();
-
-    if (overlay) {
-        overlay.classList.remove('hidden-layer');
-        document.body.classList.add('overlay-open');
-    }
+    if (!overlay) return;
+    overlay.classList.remove('hidden-layer');
+    document.body.classList.add('overlay-open');
 }
 
-function closeLegalOverlay() {
-    const overlay = document.getElementById('legalOverlay');
-
-    if (overlay) {
-        overlay.classList.add('hidden-layer');
-    }
-
-    refreshBodyOverlayState();
-}
-
-function openGuideOverlay() {
-    const overlay = document.getElementById('guideOverlay');
-    closeInfoMenu();
-
-    if (overlay) {
-        overlay.classList.remove('hidden-layer');
-        document.body.classList.add('overlay-open');
-    }
-}
-
-function closeGuideOverlay() {
-    const overlay = document.getElementById('guideOverlay');
-
-    if (overlay) {
-        overlay.classList.add('hidden-layer');
-    }
-
+function closeOverlay(id) {
+    const overlay = document.getElementById(id);
+    if (overlay) overlay.classList.add('hidden-layer');
     refreshBodyOverlayState();
 }
 
 function toggleInfoMenu() {
     const menu = document.getElementById('mobileInfoMenu');
-    if (!menu) {
-        return;
-    }
-
-    menu.classList.toggle('hidden-layer');
+    if (menu) menu.classList.toggle('hidden-layer');
 }
 
 function closeInfoMenu() {
     const menu = document.getElementById('mobileInfoMenu');
-    if (!menu) {
-        return;
-    }
-
-    menu.classList.add('hidden-layer');
+    if (menu) menu.classList.add('hidden-layer');
 }
 
-function openLegalOverlayFromMenu() {
-    closeInfoMenu();
-    openLegalOverlay();
-}
-
-function openGuideOverlayFromMenu() {
-    closeInfoMenu();
-    openGuideOverlay();
-}
+function openLegalOverlay() { openOverlay('legalOverlay'); }
+function closeLegalOverlay() { closeOverlay('legalOverlay'); }
+function openGuideOverlay() { openOverlay('guideOverlay'); }
+function closeGuideOverlay() { closeOverlay('guideOverlay'); }
+function openLegalOverlayFromMenu() { closeInfoMenu(); openLegalOverlay(); }
+function openGuideOverlayFromMenu() { closeInfoMenu(); openGuideOverlay(); }
 
 function handleOutsideMenuClick(event) {
     const menuWrap = document.querySelector('.mobile-menu-wrap');
-    if (!menuWrap) {
-        return;
-    }
-
-    if (!menuWrap.contains(event.target)) {
-        closeInfoMenu();
-    }
+    if (menuWrap && !menuWrap.contains(event.target)) closeInfoMenu();
 }
 
 function handleOverlayEscapeKey(event) {
-    if (event.key !== 'Escape') {
-        return;
-    }
-
-    closeAllPanels();
+    if (event.key === 'Escape') closeAllPanels();
 }
 
 function closeAllPanels() {
-    closeLegalOverlay();
-    closeGuideOverlay();
+    closeOverlay('legalOverlay');
+    closeOverlay('guideOverlay');
     closeInfoMenu();
 }
 
 function refreshBodyOverlayState() {
-    const legalOverlay = document.getElementById('legalOverlay');
-    const guideOverlay = document.getElementById('guideOverlay');
-
-    const legalOpen = legalOverlay && !legalOverlay.classList.contains('hidden-layer');
-    const guideOpen = guideOverlay && !guideOverlay.classList.contains('hidden-layer');
-
-    if (legalOpen || guideOpen) {
-        document.body.classList.add('overlay-open');
-    } else {
-        document.body.classList.remove('overlay-open');
-    }
+    const open = ['legalOverlay', 'guideOverlay'].some(id => {
+        const overlay = document.getElementById(id);
+        return overlay && !overlay.classList.contains('hidden-layer');
+    });
+    document.body.classList.toggle('overlay-open', open);
 }
 
-function showWinScreen() {
+function showWinScreen() { finishGame('win', './assets/img/You won, you lost/You Win A.png'); }
+function showGameOverScreen() { finishGame('gameOver', './assets/img/You won, you lost/Game Over.png'); }
+function showNoBottlesScreen() { finishGame('noBottles', './assets/img/You won, you lost/You lost.png'); }
+
+function finishGame(scene, imagePath) {
     isGameRunning = false;
     isGameFinished = true;
-    hasPlayerWon = true;
-    lostWithoutBottles = false;
+    hasPlayerWon = scene === 'win';
+    lostWithoutBottles = scene === 'noBottles';
 
     resetKeyboardState();
+    if (world) world.gameOver = true;
 
-    if (world) {
-        world.gameOver = true;
+    if (gameAudio) {
+        gameAudio.stopGameplaySounds();
+        gameAudio.stopTrack('game', false);
+
+        const actions = {
+            win: () => {
+                gameAudio.stopTracks(['gameOver', 'noBottles']);
+                gameAudio.playWin();
+            },
+            noBottles: () => {
+                gameAudio.stopTracks(['gameOver', 'win']);
+                gameAudio.playNoBottles();
+            },
+            gameOver: () => {
+                gameAudio.stopTracks(['noBottles', 'win']);
+                gameAudio.playGameOver();
+            }
+        };
+
+        actions[scene]?.();
     }
 
-    gameAudio.stopGameplaySounds();
-    gameAudio.stopTrack('game', false);
-    gameAudio.stopTracks(['gameOver', 'noBottles']);
-    gameAudio.playWin();
     refreshOverlayButtons();
-
-    screenView.showResultScreen(
-        './assets/img/You won, you lost/You Win A.png',
-        audioMuted
-    );
+    screenView.showResultScreen(imagePath, audioMuted);
 }
-
-function showGameOverScreen() {
-    isGameRunning = false;
-    isGameFinished = true;
-    hasPlayerWon = false;
-    lostWithoutBottles = false;
-
-    resetKeyboardState();
-
-    if (world) {
-        world.gameOver = true;
-    }
-
-    gameAudio.stopGameplaySounds();
-    gameAudio.stopTrack('game', false);
-    gameAudio.stopTracks(['noBottles', 'win']);
-    gameAudio.playGameOver();
-    refreshOverlayButtons();
-
-    screenView.showResultScreen(
-        './assets/img/You won, you lost/Game Over.png',
-        audioMuted
-    );
-}
-
-function showNoBottlesScreen() {
-    isGameRunning = false;
-    isGameFinished = true;
-    hasPlayerWon = false;
-    lostWithoutBottles = true;
-
-    resetKeyboardState();
-
-    if (world) {
-        world.gameOver = true;
-    }
-
-    gameAudio.stopGameplaySounds();
-    gameAudio.stopTrack('game', false);
-    gameAudio.stopTracks(['gameOver', 'win']);
-    gameAudio.playNoBottles();
-    refreshOverlayButtons();
-
-    screenView.showResultScreen(
-        './assets/img/You won, you lost/You lost.png',
-        audioMuted
-    );
-}
-
-window.addEventListener('keydown', (e) => {
-    if (e.keyCode === 37) { keyboard.LEFT = true; }
-    if (e.keyCode === 39) { keyboard.RIGHT = true; }
-    if (e.keyCode === 38) { keyboard.UP = true; }
-    if (e.keyCode === 40) { keyboard.DOWN = true; }
-    if (e.keyCode === 32) { keyboard.SPACE = true; }
-    if (e.keyCode === 68) { keyboard.D = true; }
-});
-
-window.addEventListener('keyup', (e) => {
-    if (e.keyCode === 37) { keyboard.LEFT = false; }
-    if (e.keyCode === 39) { keyboard.RIGHT = false; }
-    if (e.keyCode === 38) { keyboard.UP = false; }
-    if (e.keyCode === 40) { keyboard.DOWN = false; }
-    if (e.keyCode === 32) { keyboard.SPACE = false; }
-    if (e.keyCode === 68) { keyboard.D = false; }
-});

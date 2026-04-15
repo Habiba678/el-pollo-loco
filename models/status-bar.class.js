@@ -1,6 +1,5 @@
 /**
- * Handles different progress bars used in the game interface.
- * It supports health, boss, bottle and coin displays.
+ * Shows the different status bars in the game.
  */
 class StatusBar extends DrawableObject {
     mainSet = [];
@@ -44,11 +43,10 @@ class StatusBar extends DrawableObject {
     ];
 
     /**
-     * Creates a status bar and prepares the matching image set.
-     *
-     * @param {string} type Type of bar: 'health', 'boss', 'bottle' or 'coins'
-     * @param {number} x Horizontal position
-     * @param {number} y Vertical position
+     * Creates one status bar.
+     * @param {string} type Type of bar.
+     * @param {number} x Horizontal position.
+     * @param {number} y Vertical position.
      */
     constructor(type = 'health', x = 40, y = 0) {
         super();
@@ -60,9 +58,8 @@ class StatusBar extends DrawableObject {
     }
 
     /**
-     * Selects the correct image set and initializes the starting display.
-     *
-     * @param {string} type Chosen status bar type
+     * Picks the right image set.
+     * @param {string} type Chosen bar type.
      * @returns {void}
      */
     setupBar(type) {
@@ -88,9 +85,8 @@ class StatusBar extends DrawableObject {
     }
 
     /**
-     * Updates bars that fill in the normal direction.
-     *
-     * @param {number} value Current bar value
+     * Updates a normal bar.
+     * @param {number} value Current value.
      * @returns {void}
      */
     updateValue(value) {
@@ -100,9 +96,8 @@ class StatusBar extends DrawableObject {
     }
 
     /**
-     * Updates bars that visually fill in reverse order.
-     *
-     * @param {number} value Current bar value
+     * Updates a reverse bar.
+     * @param {number} value Current value.
      * @returns {void}
      */
     updateFillReverse(value) {
@@ -112,9 +107,8 @@ class StatusBar extends DrawableObject {
     }
 
     /**
-     * Keeps compatibility with existing calls to setPercentage().
-     *
-     * @param {number} percentage Current bar value
+     * Sets the value for normal bars.
+     * @param {number} percentage Current value.
      * @returns {void}
      */
     setPercentage(percentage) {
@@ -122,9 +116,8 @@ class StatusBar extends DrawableObject {
     }
 
     /**
-     * Keeps compatibility with existing calls for bottle/coin style bars.
-     *
-     * @param {number} percentage Current bar value
+     * Sets the value for bottle and coin bars.
+     * @param {number} percentage Current value.
      * @returns {void}
      */
     setBottlePercentage(percentage) {
@@ -132,9 +125,8 @@ class StatusBar extends DrawableObject {
     }
 
     /**
-     * Resolves the image index for normal fill bars.
-     *
-     * @returns {number}
+     * Gets the image index for normal bars.
+     * @returns {number} The matching image index.
      */
     pickStandardIndex() {
         if (this.value >= 100) return 5;
@@ -146,9 +138,8 @@ class StatusBar extends DrawableObject {
     }
 
     /**
-     * Resolves the image index for reverse fill bars.
-     *
-     * @returns {number}
+     * Gets the image index for reverse bars.
+     * @returns {number} The matching image index.
      */
     pickReverseIndex() {
         if (this.value === 0) return 5;

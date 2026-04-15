@@ -1,6 +1,5 @@
 /**
- * Bottle object used as a throwable item during gameplay.
- * After the impact, the object changes into a splash state.
+ * A bottle the character can throw.
  */
 class ThrowableObject extends MovableObject {
     groundLevel = 360;
@@ -11,12 +10,11 @@ class ThrowableObject extends MovableObject {
     splashImage = './assets/img/6_salsa_bottle/bottle_rotation/bottle_splash/1_bottle_splash.png';
 
     /**
-     * Basic setup for a thrown bottle.
-     *
+     * Creates a thrown bottle.
      * @param {number} x Start x position.
      * @param {number} y Start y position.
      * @param {boolean} otherDirection Throw direction.
-     * @param {Function|null} breakCallback Optional callback after impact.
+     * @param {Function|null} breakCallback Runs after the bottle breaks.
      */
     constructor(x, y, otherDirection = false, breakCallback = null) {
         super().loadImage('./assets/img/6_salsa_bottle/salsa_bottle.png');
@@ -28,8 +26,7 @@ class ThrowableObject extends MovableObject {
     }
 
     /**
-     * Throw movement together with gravity.
-     *
+     * Starts the throw movement.
      * @param {number} x Start x position.
      * @param {number} y Start y position.
      * @param {boolean} otherDirection Throw direction.
@@ -56,18 +53,16 @@ class ThrowableObject extends MovableObject {
     }
 
     /**
-     * Ground contact check for the projectile.
-     *
-     * @returns {boolean}
+     * Checks if the bottle hit the ground.
+     * @returns {boolean} True if the bottle touched the ground.
      */
     hasHitGround() {
         return this.y >= this.groundLevel && this.speedY <= 0;
     }
 
     /**
-     * Switches the bottle into its splash state.
-     *
-     * @param {boolean} playSound Decides whether the callback should run.
+     * Breaks the bottle and shows the splash image.
+     * @param {boolean} playSound Decides if the callback should run.
      * @returns {void}
      */
     breakBottle(playSound = true) {
@@ -95,8 +90,7 @@ class ThrowableObject extends MovableObject {
     }
 
     /**
-     * Stops the running throw interval.
-     *
+     * Stops the throw interval.
      * @returns {void}
      */
     dispose() {

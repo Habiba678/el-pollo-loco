@@ -19,8 +19,6 @@ body.overlay-open {
 h1 {
     margin: 0 0 12px 0;
     font-size: 50px;
-    
-    
 }
 
 button {
@@ -56,7 +54,6 @@ canvas {
     color: #fff8f2;
     font-size: 15px;
     font-weight: 500;
-    cursor: pointer;
     z-index: 20;
 }
 
@@ -80,14 +77,32 @@ canvas {
     display: none !important;
 }
 
-.top-icon-btn {
+.top-right-bar,
+.sound-fullscreen-bar,
+.top-right-controls {
+    position: absolute;
+    top: 92px;
+    right: 36px;
+    z-index: 30;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 12px;
+}
+
+.top-icon-btn,
+#soundBtn,
+#fullscreenBtn,
+.sound-btn,
+.fullscreen-btn,
+.top-right-btn {
     width: 42px;
     height: 42px;
     padding: 0;
     border: none;
     border-radius: 6px;
     background: #E0F2F7;
-    color: #7c7b7b;
+    color: #000000;
     font-size: 20px;
     font-weight: 700;
     line-height: 1;
@@ -98,8 +113,40 @@ canvas {
     box-shadow: none;
 }
 
-.top-icon-btn:hover {
+.top-icon-btn:hover,
+#soundBtn:hover,
+#fullscreenBtn:hover,
+.sound-btn:hover,
+.fullscreen-btn:hover,
+.top-right-btn:hover {
     background: #cfe6ed;
+}
+
+.top-icon-btn img,
+#soundBtn img,
+#fullscreenBtn img,
+.sound-btn img,
+.fullscreen-btn img,
+.top-right-btn img {
+    width: 22px;
+    height: 22px;
+    object-fit: contain;
+    pointer-events: none;
+    filter: brightness(0);
+}
+
+.top-icon-btn svg,
+#soundBtn svg,
+#fullscreenBtn svg,
+.sound-btn svg,
+.fullscreen-btn svg,
+.top-right-btn svg {
+    width: 22px;
+    height: 22px;
+    display: block;
+    pointer-events: none;
+    fill: currentColor;
+    color: #000000;
 }
 
 .desktop-only {
@@ -136,10 +183,20 @@ canvas {
     font-size: 15px;
     color: #ffffff;
     background: rgba(255, 255, 255, 0.1);
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
 .mobile-info-item:hover {
     background: rgba(255, 255, 255, 0.18);
+}
+
+.mobile-info-item img {
+    width: 18px;
+    height: 18px;
+    object-fit: contain;
+    filter: brightness(0) invert(1);
 }
 
 .mobile-controls {
@@ -160,15 +217,12 @@ body.touch-device .mobile-controls {
     display: flex;
 }
 
-.mobile-controls-group {
-    display: flex;
-    gap: 14px;
-}
-
+.mobile-controls-group,
 .mobile-controls-left,
 .mobile-controls-right {
     display: flex;
     gap: 14px;
+    align-items: center;
 }
 
 .mobile-btn {
@@ -180,7 +234,7 @@ body.touch-device .mobile-controls {
     justify-content: center;
     align-items: center;
     background: rgba(255, 255, 255, 0.92);
-    color: #6e5d5a;
+    color: #000000;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.18);
     touch-action: none;
     -webkit-user-select: none;
@@ -189,6 +243,7 @@ body.touch-device .mobile-controls {
     -webkit-user-drag: none;
     font: inherit;
     pointer-events: auto;
+    padding: 0;
 }
 
 .mobile-btn:active {
@@ -196,20 +251,47 @@ body.touch-device .mobile-controls {
 }
 
 .mobile-btn-icon {
-    font-size: 26px;
-    line-height: 1;
+    width: 100%;
+    height: 100%;
     display: flex;
     justify-content: center;
     align-items: center;
+    text-align: center;
+    pointer-events: none;
+    color: #000000;
+    line-height: 1;
+    font-family: Arial, Helvetica, sans-serif;
+    font-style: normal;
+    font-weight: 500;
+}
+
+.mobile-btn-arrow .mobile-btn-icon {
+    font-size: 24px;
+    font-weight: 500;
+    color: #000000;
+}
+
+.mobile-btn-action .mobile-btn-icon {
+    font-size: 24px;
+    font-weight: 500;
+    color: #000000;
+}
+
+.mobile-btn img,
+.mobile-btn svg {
+    width: 22px;
+    height: 22px;
+    object-fit: contain;
     pointer-events: none;
 }
 
-.mobile-btn-arrow {
-    background: rgba(255, 255, 255, 0.92);
+.mobile-btn img {
+    filter: brightness(0);
 }
 
-.mobile-btn-action {
-    background: rgba(255, 255, 255, 0.92);
+.mobile-btn svg {
+    fill: currentColor;
+    color: #000000;
 }
 
 #orientationOverlay {
@@ -285,7 +367,6 @@ body.touch-device .mobile-controls {
     color: #3a2a2a;
     font-size: 26px;
     line-height: 1;
-    cursor: pointer;
 }
 
 .overlay-close-btn:hover {
@@ -332,6 +413,13 @@ body.touch-device .mobile-controls {
     background: transparent;
 }
 
+.guide-icon-btn img {
+    width: 22px;
+    height: 22px;
+    object-fit: contain;
+    pointer-events: none;
+    filter: brightness(0);
+}
 
 @media only screen and (pointer: coarse) {
     body {
@@ -372,11 +460,24 @@ body.touch-device .mobile-controls {
 
     .top-info-bar {
         top: 14px;
+        left: 14px;
+        right: auto;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        gap: 10px;
+        z-index: 50;
+    }
+
+    .top-right-bar,
+    .sound-fullscreen-bar,
+    .top-right-controls {
+        top: 14px;
         right: 14px;
         left: auto;
         display: flex;
-        flex-direction: column;
-        align-items: flex-end;
+        flex-direction: row;
+        align-items: center;
         gap: 10px;
         z-index: 50;
     }
@@ -392,12 +493,17 @@ body.touch-device .mobile-controls {
         padding: 0 14px;
         box-sizing: border-box;
         justify-content: space-between;
-        align-items: flex-end;
+        align-items: center;
         z-index: 60;
         pointer-events: none;
     }
 
-    .mobile-controls-group {
+    .mobile-controls-group,
+    .mobile-controls-left,
+    .mobile-controls-right {
+        display: flex;
+        gap: 14px;
+        align-items: center;
         pointer-events: auto;
     }
 
@@ -408,7 +514,7 @@ body.touch-device .mobile-controls {
     }
 
     .mobile-btn-icon {
-        font-size: 26px;
+        font-size: 24px;
     }
 
     .overlay-panel {

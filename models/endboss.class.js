@@ -1,144 +1,153 @@
 /**
- * Represents the Endboss enemy.
- * Handles sprites, movement basics and one jump attack.
+ * Manages endboss behavior, reactions and collision handling.
  */
-class Endboss extends MovableObject {
-    x;
-    y = 140;
-    width = 170;
-    height = 315;
-    offset = { top: 60, bottom: 10, left: 25, right: 25 };
-
-    lifePoints = 100;
-    speed = 1.1;
-    jumpAttackSpeed = 3.2;
-    world = null;
-    isActive = false;
-    isJumpAttacking = false;
-    hitPower = 20;
-
-    alertCycle = [
-        './assets/img/4_enemie_boss_chicken/2_alert/G5.png',
-        './assets/img/4_enemie_boss_chicken/2_alert/G6.png',
-        './assets/img/4_enemie_boss_chicken/2_alert/G7.png',
-        './assets/img/4_enemie_boss_chicken/2_alert/G8.png',
-        './assets/img/4_enemie_boss_chicken/2_alert/G9.png',
-        './assets/img/4_enemie_boss_chicken/2_alert/G10.png',
-        './assets/img/4_enemie_boss_chicken/2_alert/G11.png',
-        './assets/img/4_enemie_boss_chicken/2_alert/G12.png'
-    ];
-
-    walkCycle = [
-        './assets/img/4_enemie_boss_chicken/1_walk/G1.png',
-        './assets/img/4_enemie_boss_chicken/1_walk/G2.png',
-        './assets/img/4_enemie_boss_chicken/1_walk/G3.png',
-        './assets/img/4_enemie_boss_chicken/1_walk/G4.png'
-    ];
-
-    hurtCycle = [
-        './assets/img/4_enemie_boss_chicken/4_hurt/G21.png',
-        './assets/img/4_enemie_boss_chicken/4_hurt/G22.png',
-        './assets/img/4_enemie_boss_chicken/4_hurt/G23.png'
-    ];
-
-    deadCycle = [
-        './assets/img/4_enemie_boss_chicken/5_dead/G24.png',
-        './assets/img/4_enemie_boss_chicken/5_dead/G25.png',
-        './assets/img/4_enemie_boss_chicken/5_dead/G26.png'
-    ];
-
-    constructor() {
-        super().loadImage(this.alertCycle[0]);
-        this.loadImages(this.alertCycle);
-        this.loadImages(this.walkCycle);
-        this.loadImages(this.hurtCycle);
-        this.loadImages(this.deadCycle);
-
-        this.x = 2200;
-        this.groundLevel = 140;
-        this.otherDirection = false;
-
-        this.applyGravity();
-        this.animate();
+class EndbossManager {
+    /**
+     * Creates the endboss manager.
+     *
+     * @param {World} world - The current game world.
+     */
+    constructor(world) {
+        this.world = world;
+        this.jumpCooldown = false;
+        this.lastBossHitTime = 0;
+        this.hitPauseActive = false;
     }
 
-    animate() {
-        setInterval(() => {
-            if (this.isDead()) {
-                this.playAnimation(this.deadCycle);
-                return;
-            }
-
-            if (this.isHurt()) {
-                this.playAnimation(this.hurtCycle);
-                return;
-            }
-
-            if (this.isActive) {
-                this.playAnimation(this.walkCycle);
-                return;
-            }
-
-            this.playAnimation(this.alertCycle);
-        }, 180);
+    /**
+     * Returns the current endboss instance from the enemy list.
+     *
+     * @returns {Endboss|undefined} The endboss object if found.
+     */
+    get endboss() {
+        return this.world.level.enemies.find(enemy => enemy instanceof Endboss);
     }
 
-    moveTowardCharacter(characterX) {
-        if (this.isDead() || this.isJumpAttacking) {
+    /**
+     * Updates activation and movement behavior of the endboss.
+     *
+     * @returns {void}
+     */
+    update() {
+        const boss = this.endboss;
+
+        if (!boss || boss.isDead() || !boss.world) {
             return;
         }
 
-        if (this.x > characterX + 45) {
-            this.moveLeft();
-            this.otherDirection = false;
+        const character = this.world.character;
+        const distance = Math.abs(boss.x - character.x);
+
+        if (distance < 500) {
+            boss.isActive = true;
         }
+
+        if (!boss.isActive || this.hitPauseActive) {
+            return;
+        }
+
+        boss.moveTowardCharacter(character.x);
     }
 
+    /**
+     * Starts a boss jump attack if the cooldown allows it.
+     *
+     * @returns {void}
+     */
     triggerJumpAttack() {
-        if (!this.world || this.isDead() || this.isJumpAttacking) {
+        const boss = this.endboss;
+
+        if (!boss || boss.isDead() || boss.isJumpAttacking || this.jumpCooldown) {
             return;
         }
 
-        this.isJumpAttacking = true;
-        this.speedY = 20;
+        this.jumpCooldown = true;
+        boss.triggerJumpAttack();
 
-        const characterX = this.world.character.x;
-        const jumpToRight = this.x < characterX;
-
-        const jumpInterval = setInterval(() => {
-            if (this.isDead()) {
-                clearInterval(jumpInterval);
-                this.isJumpAttacking = false;
-                return;
-            }
-
-            const landed = !this.isAboveGround() && this.speedY === 0;
-
-            if (landed) {
-                clearInterval(jumpInterval);
-                this.isJumpAttacking = false;
-                return;
-            }
-
-            if (jumpToRight) {
-                this.x += this.jumpAttackSpeed;
-                this.otherDirection = true;
-            } else {
-                this.x -= this.jumpAttackSpeed;
-                this.otherDirection = false;
-            }
-        }, 1000 / 60);
+        setTimeout(() => {
+            this.jumpCooldown = false;
+        }, 1400);
     }
 
-    hit() {
-        this.lifePoints = Math.max(0, this.lifePoints - this.hitPower);
+    /**
+     * Applies damage to the endboss, updates the boss bar
+     * and checks whether the fight has been won.
+     *
+     * @returns {void}
+     */
+    handleBossHit() {
+        const boss = this.endboss;
 
-        if (this.lifePoints > 0) {
-            this.lastHit = Date.now();
+        if (!boss || boss.isDead()) {
+            return;
+        }
+
+        boss.hit();
+        this.world.statusBarEndboss.setPercentage(boss.lifePoints);
+
+        if (this.world.gameAudio) {
+            this.world.gameAudio.playEndbossHit();
+        }
+
+        const now = Date.now();
+        const enoughTimePassed = now - this.lastBossHitTime > 500;
+
+        if (enoughTimePassed) {
+            this.lastBossHitTime = now;
+            this.triggerJumpAttack();
+        }
+
+        if (boss.isDead()) {
+            this.world.gameOver = true;
+
+            setTimeout(() => {
+                if (typeof showWinScreen === 'function') {
+                    showWinScreen();
+                }
+            }, 500);
         }
     }
 
-    isDead() {
-        return this.lifePoints <= 0;
+    /**
+     * Handles collision between character and endboss,
+     * applies damage and starts knockback.
+     *
+     * @returns {void}
+     */
+    handleBossCollision() {
+        const boss = this.endboss;
+
+        if (!boss || boss.isDead()) {
+            return;
+        }
+
+        const character = this.world.character;
+
+        if (!character.isColliding(boss)) {
+            return;
+        }
+
+        if (character.isHurt() || this.hitPauseActive) {
+            return;
+        }
+
+        character.hit();
+        this.world.statusBarHealth.setPercentage(character.energy);
+
+        const maxCharacterX = boss.x - character.width - 10;
+        if (character.x > maxCharacterX) {
+            character.x = maxCharacterX;
+        }
+
+        this.hitPauseActive = true;
+        character.startKnockback(140, 28, 12);
+
+        if (this.world.gameAudio) {
+            this.world.gameAudio.playCharacterHit();
+        }
+
+        setTimeout(() => {
+            this.hitPauseActive = false;
+        }, 350);
     }
 }

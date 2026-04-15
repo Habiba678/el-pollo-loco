@@ -1,5 +1,5 @@
 /**
- * Represents the smaller chicken enemy.
+ * Represents a small chicken enemy.
  */
 class ChickenSmall extends MovableObject {
     x;
@@ -19,6 +19,9 @@ class ChickenSmall extends MovableObject {
 
     deadSprite = './assets/img/3_enemies_chicken/chicken_small/2_dead/dead.png';
 
+    /**
+     * Creates a small chicken and loads its images.
+     */
     constructor() {
         super().loadImage('./assets/img/3_enemies_chicken/chicken_small/1_walk/1_w.png');
         this.loadImages(this.walkSprites);
@@ -27,6 +30,10 @@ class ChickenSmall extends MovableObject {
         this.animation();
     }
 
+    /**
+     * Starts movement and walk animation.
+     * @returns {void}
+     */
     animation() {
         setInterval(() => {
             if (!this.dead) {
@@ -41,6 +48,10 @@ class ChickenSmall extends MovableObject {
         }, 200);
     }
 
+    /**
+     * Marks the chicken as dead.
+     * @returns {void}
+     */
     die() {
         this.dead = true;
         this.speed = 0;

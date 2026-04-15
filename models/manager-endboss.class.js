@@ -1,4 +1,11 @@
+/**
+ * Manages the endboss logic.
+ */
 class EndbossManager {
+    /**
+     * Sets up the boss manager.
+     * @param {World} world The current game world.
+     */
     constructor(world) {
         this.world = world;
         this.jumpCooldown = false;
@@ -6,10 +13,18 @@ class EndbossManager {
         this.hitPauseActive = false;
     }
 
+    /**
+     * Gets the current endboss.
+     * @returns {Endboss|undefined} The current endboss.
+     */
     get endboss() {
         return this.world.level.enemies.find(enemy => enemy instanceof Endboss);
     }
 
+    /**
+     * Updates the boss behavior.
+     * @returns {void}
+     */
     update() {
         const boss = this.endboss;
 
@@ -31,6 +46,10 @@ class EndbossManager {
         boss.moveTowardCharacter(character.x);
     }
 
+    /**
+     * Starts the jump attack.
+     * @returns {void}
+     */
     triggerJumpAttack() {
         const boss = this.endboss;
 
@@ -46,6 +65,10 @@ class EndbossManager {
         }, 1400);
     }
 
+    /**
+     * Updates the boss after a hit.
+     * @returns {void}
+     */
     handleBossHit() {
         const boss = this.endboss;
 
@@ -79,6 +102,10 @@ class EndbossManager {
         }
     }
 
+    /**
+     * Checks collision with the boss.
+     * @returns {void}
+     */
     handleBossCollision() {
         const boss = this.endboss;
 
