@@ -1,153 +1,168 @@
 /**
- * Manages endboss behavior, reactions and collision handling.
+ * The endboss enemy.
+ * It can walk, get hurt, die and jump attack.
  */
-class EndbossManager {
+class Endboss extends MovableObject {
+    x;
+    y = 140;
+    width = 170;
+    height = 315;
+    offset = { top: 60, bottom: 10, left: 25, right: 25 };
+
+    lifePoints = 100;
+    speed = 1.1;
+    jumpAttackSpeed = 3.2;
+    world = null;
+    isActive = false;
+    isJumpAttacking = false;
+    hitPower = 20;
+
+    alertCycle = [
+        './assets/img/4_enemie_boss_chicken/2_alert/G5.png',
+        './assets/img/4_enemie_boss_chicken/2_alert/G6.png',
+        './assets/img/4_enemie_boss_chicken/2_alert/G7.png',
+        './assets/img/4_enemie_boss_chicken/2_alert/G8.png',
+        './assets/img/4_enemie_boss_chicken/2_alert/G9.png',
+        './assets/img/4_enemie_boss_chicken/2_alert/G10.png',
+        './assets/img/4_enemie_boss_chicken/2_alert/G11.png',
+        './assets/img/4_enemie_boss_chicken/2_alert/G12.png'
+    ];
+
+    walkCycle = [
+        './assets/img/4_enemie_boss_chicken/1_walk/G1.png',
+        './assets/img/4_enemie_boss_chicken/1_walk/G2.png',
+        './assets/img/4_enemie_boss_chicken/1_walk/G3.png',
+        './assets/img/4_enemie_boss_chicken/1_walk/G4.png'
+    ];
+
+    hurtCycle = [
+        './assets/img/4_enemie_boss_chicken/4_hurt/G21.png',
+        './assets/img/4_enemie_boss_chicken/4_hurt/G22.png',
+        './assets/img/4_enemie_boss_chicken/4_hurt/G23.png'
+    ];
+
+    deadCycle = [
+        './assets/img/4_enemie_boss_chicken/5_dead/G24.png',
+        './assets/img/4_enemie_boss_chicken/5_dead/G25.png',
+        './assets/img/4_enemie_boss_chicken/5_dead/G26.png'
+    ];
+
     /**
-     * Creates the endboss manager.
-     *
-     * @param {World} world - The current game world.
+     * Creates the endboss and loads its images.
      */
-    constructor(world) {
-        this.world = world;
-        this.jumpCooldown = false;
-        this.lastBossHitTime = 0;
-        this.hitPauseActive = false;
+    constructor() {
+        super().loadImage(this.alertCycle[0]);
+        this.loadImages(this.alertCycle);
+        this.loadImages(this.walkCycle);
+        this.loadImages(this.hurtCycle);
+        this.loadImages(this.deadCycle);
+
+        this.x = 2200;
+        this.groundLevel = 140;
+        this.otherDirection = false;
+
+        this.applyGravity();
+        this.animate();
     }
 
     /**
-     * Returns the current endboss instance from the enemy list.
-     *
-     * @returns {Endboss|undefined} The endboss object if found.
-     */
-    get endboss() {
-        return this.world.level.enemies.find(enemy => enemy instanceof Endboss);
-    }
-
-    /**
-     * Updates activation and movement behavior of the endboss.
-     *
+     * Plays the right animation.
      * @returns {void}
      */
-    update() {
-        const boss = this.endboss;
+    animate() {
+        setInterval(() => {
+            if (this.isDead()) {
+                this.playAnimation(this.deadCycle);
+                return;
+            }
 
-        if (!boss || boss.isDead() || !boss.world) {
-            return;
-        }
+            if (this.isHurt()) {
+                this.playAnimation(this.hurtCycle);
+                return;
+            }
 
-        const character = this.world.character;
-        const distance = Math.abs(boss.x - character.x);
+            if (this.isActive) {
+                this.playAnimation(this.walkCycle);
+                return;
+            }
 
-        if (distance < 500) {
-            boss.isActive = true;
-        }
-
-        if (!boss.isActive || this.hitPauseActive) {
-            return;
-        }
-
-        boss.moveTowardCharacter(character.x);
+            this.playAnimation(this.alertCycle);
+        }, 180);
     }
 
     /**
-     * Starts a boss jump attack if the cooldown allows it.
-     *
+     * Moves the endboss toward the character.
+     * @param {number} characterX The character x position.
+     * @returns {void}
+     */
+    moveTowardCharacter(characterX) {
+        if (this.isDead() || this.isJumpAttacking) {
+            return;
+        }
+
+        if (this.x > characterX + 45) {
+            this.moveLeft();
+            this.otherDirection = false;
+        }
+    }
+
+    /**
+     * Starts the jump attack.
      * @returns {void}
      */
     triggerJumpAttack() {
-        const boss = this.endboss;
-
-        if (!boss || boss.isDead() || boss.isJumpAttacking || this.jumpCooldown) {
+        if (!this.world || this.isDead() || this.isJumpAttacking) {
             return;
         }
 
-        this.jumpCooldown = true;
-        boss.triggerJumpAttack();
+        this.isJumpAttacking = true;
+        this.speedY = 20;
 
-        setTimeout(() => {
-            this.jumpCooldown = false;
-        }, 1400);
+        const characterX = this.world.character.x;
+        const jumpToRight = this.x < characterX;
+
+        const jumpInterval = setInterval(() => {
+            if (this.isDead()) {
+                clearInterval(jumpInterval);
+                this.isJumpAttacking = false;
+                return;
+            }
+
+            const landed = !this.isAboveGround() && this.speedY === 0;
+
+            if (landed) {
+                clearInterval(jumpInterval);
+                this.isJumpAttacking = false;
+                return;
+            }
+
+            if (jumpToRight) {
+                this.x += this.jumpAttackSpeed;
+                this.otherDirection = true;
+            } else {
+                this.x -= this.jumpAttackSpeed;
+                this.otherDirection = false;
+            }
+        }, 1000 / 60);
     }
 
     /**
-     * Applies damage to the endboss, updates the boss bar
-     * and checks whether the fight has been won.
-     *
+     * Reduces the boss health.
      * @returns {void}
      */
-    handleBossHit() {
-        const boss = this.endboss;
+    hit() {
+        this.lifePoints = Math.max(0, this.lifePoints - this.hitPower);
 
-        if (!boss || boss.isDead()) {
-            return;
-        }
-
-        boss.hit();
-        this.world.statusBarEndboss.setPercentage(boss.lifePoints);
-
-        if (this.world.gameAudio) {
-            this.world.gameAudio.playEndbossHit();
-        }
-
-        const now = Date.now();
-        const enoughTimePassed = now - this.lastBossHitTime > 500;
-
-        if (enoughTimePassed) {
-            this.lastBossHitTime = now;
-            this.triggerJumpAttack();
-        }
-
-        if (boss.isDead()) {
-            this.world.gameOver = true;
-
-            setTimeout(() => {
-                if (typeof showWinScreen === 'function') {
-                    showWinScreen();
-                }
-            }, 500);
+        if (this.lifePoints > 0) {
+            this.lastHit = Date.now();
         }
     }
 
     /**
-     * Handles collision between character and endboss,
-     * applies damage and starts knockback.
-     *
-     * @returns {void}
+     * Checks if the boss is dead.
+     * @returns {boolean}
      */
-    handleBossCollision() {
-        const boss = this.endboss;
-
-        if (!boss || boss.isDead()) {
-            return;
-        }
-
-        const character = this.world.character;
-
-        if (!character.isColliding(boss)) {
-            return;
-        }
-
-        if (character.isHurt() || this.hitPauseActive) {
-            return;
-        }
-
-        character.hit();
-        this.world.statusBarHealth.setPercentage(character.energy);
-
-        const maxCharacterX = boss.x - character.width - 10;
-        if (character.x > maxCharacterX) {
-            character.x = maxCharacterX;
-        }
-
-        this.hitPauseActive = true;
-        character.startKnockback(140, 28, 12);
-
-        if (this.world.gameAudio) {
-            this.world.gameAudio.playCharacterHit();
-        }
-
-        setTimeout(() => {
-            this.hitPauseActive = false;
-        }, 350);
+    isDead() {
+        return this.lifePoints <= 0;
     }
 }

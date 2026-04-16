@@ -36,7 +36,11 @@ function init() {
     gameAudio = new AudioManager(AUDIO_STORAGE_KEY);
     gameAudio.init();
     audioMuted = gameAudio.loadMutedState();
-    gameAudio.initUnlock(() => { if (!audioMuted && isGameRunning) gameAudio.playGame(); });
+    refreshAudioButtonIcon();
+
+    gameAudio.initUnlock(() => {
+        if (!audioMuted && isGameRunning) gameAudio.playGame();
+    });
 
     screenView = new GameScreen();
     screenView.setCanvas(canvas, ctx);
@@ -81,6 +85,12 @@ function getSceneAudioName() {
     if (hasPlayerWon) return 'win';
     if (lostWithoutBottles) return 'noBottles';
     return isGameFinished ? 'gameOver' : 'game';
+}
+
+function refreshAudioButtonIcon() {
+    const slash = document.getElementById('audioMuteSlash');
+    if (!slash) return;
+    slash.classList.toggle('hidden-audio-slash', !audioMuted);
 }
 
 function refreshOverlayButtons() {
@@ -141,10 +151,7 @@ function returnToStartScreen() {
 
 function handleCanvasClick(event) {
     screenView.handleCanvasClick(event, getScreenState(), {
-        startGame: launchGame,
-        restartGame: restartRoundDirectly,
-        toggleMusic: switchAudioMode,
-        toggleFullscreen: () => mobileControls.toggleFullscreen()
+        startGame: launchGame
     });
 }
 
@@ -186,13 +193,23 @@ function renderStartView() {
     resetGameFlags();
     refreshOverlayButtons();
     screenView.showStartScreen(audioMuted);
+    refreshAudioButtonIcon();
 }
 
 function switchAudioMode() {
     if (!gameAudio) return;
+
     audioMuted = gameAudio.toggleMute();
-    audioMuted ? gameAudio.pauseAll() : gameAudio.playScene(getSceneAudioName());
-    if (screenView) screenView.refreshSpeakerIcon(audioMuted);
+
+    if (audioMuted) {
+        gameAudio.pauseAll();
+        gameAudio.stopGameplaySounds();
+        gameAudio.stopTracks(['game', 'gameOver', 'win', 'noBottles']);
+    } else {
+        gameAudio.playScene(getSceneAudioName());
+    }
+
+    refreshAudioButtonIcon();
 }
 
 function openOverlay(id) {
@@ -286,4 +303,5 @@ function finishGame(scene, imagePath) {
 
     refreshOverlayButtons();
     screenView.showResultScreen(imagePath, audioMuted);
+    refreshAudioButtonIcon();
 }

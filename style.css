@@ -1,6 +1,5 @@
 body {
     display: flex;
-    flex-direction: column;
     justify-content: center;
     align-items: center;
     min-height: 100vh;
@@ -10,15 +9,11 @@ body {
     background-repeat: no-repeat;
     background-size: cover;
     background-position: center;
+    font-family: Arial, Helvetica, sans-serif;
 }
 
 body.overlay-open {
     overflow: hidden;
-}
-
-h1 {
-    margin: 0 0 12px 0;
-    font-size: 50px;
 }
 
 button {
@@ -26,21 +21,25 @@ button {
 }
 
 .game-container {
+    position: relative;
     display: flex;
     justify-content: center;
     align-items: center;
-    flex-direction: column;
-    position: relative;
     width: 100%;
-    max-width: 720px;
+    max-width: 980px;
+    padding-top: 0;
+    padding-bottom: 82px;
 }
 
 canvas {
     display: block;
     width: 100%;
-    max-width: 720px;
-    height: 480px;
+    max-width: 700px;
+    height: 468px;
     border-radius: 20px;
+    border: 2px solid rgba(68, 40, 24, 0.18);
+    box-shadow: 0 14px 34px rgba(0, 0, 0, 0.22);
+    background: transparent;
 }
 
 .back-to-start-btn,
@@ -49,8 +48,8 @@ canvas {
     width: 145px;
     height: 38px;
     border: none;
-    border-radius: 10px;
-    background: rgba(198, 112, 104, 0.88);
+    border-radius: 12px;
+    background: rgba(198, 112, 104, 0.9);
     color: #fff8f2;
     font-size: 15px;
     font-weight: 500;
@@ -59,94 +58,94 @@ canvas {
 
 .back-to-start-btn:hover,
 .nochmal-btn:hover {
-    background: rgba(183, 96, 88, 0.95);
+    background: rgba(198, 112, 104, 0.9);
 }
 
-.top-info-bar {
+.top-bar {
     position: absolute;
-    top: 92px;
-    left: 36px;
+    top: 24px;
+    left: 50%;
+    transform: translateX(-50%);
     z-index: 30;
     display: flex;
-    flex-direction: row;
+    justify-content: center;
     align-items: center;
-    gap: 12px;
+    gap: 8px;
+    padding: 6px 18px;
+    border-radius: 14px;
+    background: #f2c94c;
+    box-shadow: 0 5px 12px rgba(0, 0, 0, 0.12);
+    border: 1px solid rgba(130, 92, 20, 0.10);
 }
 
-.top-info-bar.hidden-bar {
+.top-bar.hidden-bar {
     display: none !important;
 }
 
-.top-right-bar,
-.sound-fullscreen-bar,
-.top-right-controls {
-    position: absolute;
-    top: 92px;
-    right: 36px;
-    z-index: 30;
+.top-bar-left,
+.top-bar-right {
     display: flex;
-    flex-direction: row;
     align-items: center;
-    gap: 12px;
+    gap: 8px;
 }
 
-.top-icon-btn,
-#soundBtn,
-#fullscreenBtn,
-.sound-btn,
-.fullscreen-btn,
-.top-right-btn {
-    width: 42px;
-    height: 42px;
+.top-icon-btn {
+    width: 54px;
+    height: 36px;
     padding: 0;
     border: none;
-    border-radius: 6px;
-    background: #E0F2F7;
+    border-radius: 9px;
+    background: transparent;
     color: #000000;
-    font-size: 20px;
-    font-weight: 700;
-    line-height: 1;
     display: flex;
     justify-content: center;
     align-items: center;
     box-sizing: border-box;
     box-shadow: none;
+    transition: none;
 }
 
-.top-icon-btn:hover,
-#soundBtn:hover,
-#fullscreenBtn:hover,
-.sound-btn:hover,
-.fullscreen-btn:hover,
-.top-right-btn:hover {
-    background: #cfe6ed;
+.top-icon-btn:hover {
+    background: transparent;
+    transform: none;
 }
 
-.top-icon-btn img,
-#soundBtn img,
-#fullscreenBtn img,
-.sound-btn img,
-.fullscreen-btn img,
-.top-right-btn img {
-    width: 22px;
-    height: 22px;
+.top-icon-btn img {
+    width: 28px;
+    height: 28px;
     object-fit: contain;
     pointer-events: none;
     filter: brightness(0);
 }
 
-.top-icon-btn svg,
-#soundBtn svg,
-#fullscreenBtn svg,
-.sound-btn svg,
-.fullscreen-btn svg,
-.top-right-btn svg {
-    width: 22px;
-    height: 22px;
-    display: block;
-    pointer-events: none;
-    fill: currentColor;
+.back-icon-btn,
+.info-btn,
+.icon-only-item {
+    font-size: 28px;
+    font-weight: 700;
     color: #000000;
+}
+
+.guide-icon-btn img {
+    filter: brightness(0);
+}
+
+.audio-btn {
+    position: relative;
+}
+
+.audio-mute-slash {
+    position: absolute;
+    width: 32px;
+    height: 3px;
+    background: #000000;
+    transform: rotate(-45deg);
+    border-radius: 3px;
+    pointer-events: none;
+}
+
+.hidden-audio-slash {
+    display: none;
 }
 
 .desktop-only {
@@ -157,46 +156,92 @@ canvas {
     display: none;
 }
 
+.desktop-bottom-actions {
+    position: absolute;
+    left: 50%;
+    bottom: 10px;
+    transform: translateX(-50%);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 14px;
+    z-index: 25;
+}
+
+.bottom-action-btn {
+    min-width: 150px;
+    height: 42px;
+    padding: 0 18px;
+    border: none;
+    border-radius: 14px;
+    background: #d8d36d;
+    color: #1f1f1f;
+    font-size: 15px;
+    font-weight: 700;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.10);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: none;
+}
+
+.bottom-action-btn:hover {
+    background: #d8d36d;
+    transform: none;
+}
+
 .mobile-menu-wrap {
     position: relative;
+}
+
+.mobile-top-btn {
+    background: #f1cd4f;
+    color: #000000;
+    font-size: 20px;
+    font-weight: 700;
+}
+
+.mobile-top-btn:hover {
+    background: #f1cd4f;
+    transform: none;
 }
 
 .mobile-info-menu {
     position: absolute;
     top: 56px;
     right: 0;
-    min-width: 190px;
+    min-width: auto;
     display: flex;
-    flex-direction: column;
     gap: 8px;
-    padding: 10px;
+    padding: 8px;
     border-radius: 12px;
-    background: rgba(35, 35, 35, 0.92);
-    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.28);
+    background: rgba(28, 28, 28, 0.94);
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.22);
 }
 
 .mobile-info-item {
+    width: 42px;
+    height: 42px;
+    padding: 0;
     border: none;
-    border-radius: 8px;
-    padding: 10px 12px;
-    text-align: left;
-    font-size: 15px;
-    color: #ffffff;
-    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    background: #f1cd4f;
+    color: #000000;
     display: flex;
+    justify-content: center;
     align-items: center;
-    gap: 8px;
 }
 
 .mobile-info-item:hover {
-    background: rgba(255, 255, 255, 0.18);
+    background: #f1cd4f;
+    transform: none;
 }
 
 .mobile-info-item img {
-    width: 18px;
-    height: 18px;
+    width: 20px;
+    height: 20px;
     object-fit: contain;
-    filter: brightness(0) invert(1);
+    filter: brightness(0);
 }
 
 .mobile-controls {
@@ -207,34 +252,34 @@ canvas {
     box-sizing: border-box;
     display: none;
     justify-content: space-between;
-    align-items: center;
+    align-items: flex-end;
     gap: 16px;
     user-select: none;
     touch-action: manipulation;
 }
 
 body.touch-device .mobile-controls {
-    display: flex;
+    display: none !important;
 }
 
 .mobile-controls-group,
 .mobile-controls-left,
 .mobile-controls-right {
     display: flex;
-    gap: 14px;
+    gap: 12px;
     align-items: center;
 }
 
 .mobile-btn {
-    width: 54px;
-    height: 54px;
+    width: 46px;
+    height: 46px;
     border-radius: 50%;
     border: none;
     display: flex;
     justify-content: center;
     align-items: center;
-    background: rgba(255, 255, 255, 0.92);
-    color: #000000;
+    background: #f1cd4f;
+    color: #1f1f1f;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.18);
     touch-action: none;
     -webkit-user-select: none;
@@ -244,6 +289,7 @@ body.touch-device .mobile-controls {
     font: inherit;
     pointer-events: auto;
     padding: 0;
+    transition: none;
 }
 
 .mobile-btn:active {
@@ -258,46 +304,22 @@ body.touch-device .mobile-controls {
     align-items: center;
     text-align: center;
     pointer-events: none;
-    color: #000000;
+    color: #1f1f1f;
     line-height: 1;
     font-family: Arial, Helvetica, sans-serif;
     font-style: normal;
-    font-weight: 500;
+    font-weight: 700;
 }
 
-.mobile-btn-arrow .mobile-btn-icon {
-    font-size: 24px;
-    font-weight: 500;
-    color: #000000;
-}
-
+.mobile-btn-arrow .mobile-btn-icon,
 .mobile-btn-action .mobile-btn-icon {
     font-size: 24px;
-    font-weight: 500;
-    color: #000000;
-}
-
-.mobile-btn img,
-.mobile-btn svg {
-    width: 22px;
-    height: 22px;
-    object-fit: contain;
-    pointer-events: none;
-}
-
-.mobile-btn img {
-    filter: brightness(0);
-}
-
-.mobile-btn svg {
-    fill: currentColor;
-    color: #000000;
 }
 
 #orientationOverlay {
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.85);
+    background: rgba(0, 0, 0, 0.86);
     color: #ffffff;
     display: none;
     justify-content: center;
@@ -333,7 +355,7 @@ body.touch-device .mobile-controls {
     width: min(520px, 92vw);
     max-height: 72vh;
     border-radius: 18px;
-    background: rgba(255, 255, 255, 0.94);
+    background: rgba(255, 255, 255, 0.95);
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
     padding: 26px 26px 22px;
     box-sizing: border-box;
@@ -370,7 +392,7 @@ body.touch-device .mobile-controls {
 }
 
 .overlay-close-btn:hover {
-    background: #c98d86;
+    background: #d9a39d;
 }
 
 .overlay-scroll-area {
@@ -413,30 +435,19 @@ body.touch-device .mobile-controls {
     background: transparent;
 }
 
-.guide-icon-btn img {
-    width: 22px;
-    height: 22px;
-    object-fit: contain;
-    pointer-events: none;
-    filter: brightness(0);
-}
-
 @media only screen and (pointer: coarse) {
     body {
         padding: 0;
         overflow: hidden;
     }
 
-    h1 {
-        display: none;
-    }
-
     .game-container {
         position: relative;
-        width: min(100vw, calc(100vh * 1.5));
-        height: min(100vh, calc(100vw / 1.5));
+        width: min(96vw, 720px);
+        height: auto;
         max-width: 720px;
-        max-height: 480px;
+        padding-top: 0;
+        padding-bottom: 0;
         display: flex;
         justify-content: center;
         align-items: center;
@@ -444,9 +455,9 @@ body.touch-device .mobile-controls {
 
     canvas {
         width: 100%;
-        height: 100%;
+        height: auto;
+        aspect-ratio: 720 / 480;
         max-width: 720px;
-        max-height: 480px;
         display: block;
     }
 
@@ -458,28 +469,24 @@ body.touch-device .mobile-controls {
         display: block;
     }
 
-    .top-info-bar {
-        top: 14px;
-        left: 14px;
-        right: auto;
-        display: flex;
-        flex-direction: row;
-        align-items: center;
-        gap: 10px;
-        z-index: 50;
+    .top-bar {
+        top: 22px;
+        left: auto;
+        right: 18px;
+        transform: none;
+        justify-content: flex-end;
+        padding: 0;
+        background: transparent;
+        box-shadow: none;
+        border: none;
     }
 
-    .top-right-bar,
-    .sound-fullscreen-bar,
-    .top-right-controls {
-        top: 14px;
-        right: 14px;
-        left: auto;
-        display: flex;
-        flex-direction: row;
-        align-items: center;
-        gap: 10px;
-        z-index: 50;
+    .desktop-bottom-actions {
+        display: none;
+    }
+
+    body.touch-device .mobile-controls {
+        display: flex !important;
     }
 
     .mobile-controls {
@@ -487,7 +494,7 @@ body.touch-device .mobile-controls {
         position: absolute;
         left: 0;
         right: 0;
-        bottom: 10px;
+        bottom: 12px;
         width: 100%;
         max-width: none;
         padding: 0 14px;
@@ -502,19 +509,49 @@ body.touch-device .mobile-controls {
     .mobile-controls-left,
     .mobile-controls-right {
         display: flex;
+        flex-direction: row;
         gap: 14px;
         align-items: center;
         pointer-events: auto;
     }
 
+    .mobile-controls-left,
+    .mobile-controls-right {
+        position: static;
+    }
+
     .mobile-btn {
-        width: 52px;
-        height: 52px;
+        width: 46px;
+        height: 46px;
+        border-radius: 50%;
+        border: none;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: #f1cd4f;
+        color: #1f1f1f;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.18);
+        padding: 0;
         pointer-events: auto;
     }
 
+    .mobile-btn:hover {
+        background: #f1cd4f;
+        transform: none;
+    }
+
     .mobile-btn-icon {
-        font-size: 24px;
+        color: #1f1f1f;
+        font-weight: 700;
+    }
+
+    .mobile-btn-arrow .mobile-btn-icon,
+    .mobile-btn-action .mobile-btn-icon {
+        font-size: 22px;
+    }
+
+    .mobile-info-menu {
+        top: 44px;
     }
 
     .overlay-panel {
@@ -538,11 +575,6 @@ body.touch-device .mobile-controls {
     width: 100vw;
     height: 100vh;
     max-width: none;
-}
-
-.game-container:fullscreen h1,
-.game-container:-webkit-full-screen h1 {
-    display: none;
 }
 
 .game-container:fullscreen canvas,
