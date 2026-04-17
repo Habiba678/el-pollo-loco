@@ -1,6 +1,3 @@
-/**
- * Controls the game flow.
- */
 let canvas;
 let ctx;
 let world;
@@ -12,6 +9,7 @@ let restartButton;
 let gameAudio;
 let mobileControls;
 let topInfoBar;
+let startButton;
 
 let isGameRunning = false;
 let isGameFinished = false;
@@ -20,26 +18,36 @@ let hasPlayerWon = false;
 let lostWithoutBottles = false;
 
 const AUDIO_STORAGE_KEY = 'elpolo.musicMuted';
-const KEY_BINDINGS = { 37: 'LEFT', 39: 'RIGHT', 38: 'UP', 40: 'DOWN', 32: 'SPACE', 68: 'D' };
+const KEY_BINDINGS = {
+    37: 'LEFT',
+    39: 'RIGHT',
+    38: 'UP',
+    40: 'DOWN',
+    32: 'SPACE',
+    68: 'D'
+};
 
 /**
- * Starts the game setup.
+ * Initializes the game.
  * @returns {void}
  */
 function init() {
+    mountTemplates();
+
     canvas = document.getElementById('canvas');
     ctx = canvas.getContext('2d');
     backToStartButton = document.getElementById('backToStartBtn');
     restartButton = document.getElementById('nochmalBtn');
     topInfoBar = document.getElementById('topInfoBar');
+    startButton = document.getElementById('startBtn');
 
     gameAudio = new AudioManager(AUDIO_STORAGE_KEY);
     gameAudio.init();
     audioMuted = gameAudio.loadMutedState();
-    refreshAudioButtonIcon();
-
     gameAudio.initUnlock(() => {
-        if (!audioMuted && isGameRunning) gameAudio.playGame();
+        if (!audioMuted && isGameRunning) {
+            gameAudio.playGame();
+        }
     });
 
     screenView = new GameScreen();
@@ -52,15 +60,24 @@ function init() {
     mobileControls.checkOrientation();
     refreshOverlayButtons();
 
-    if (backToStartButton) backToStartButton.addEventListener('click', returnToStartScreen);
-    if (restartButton) restartButton.addEventListener('click', restartRoundDirectly);
+    if (backToStartButton) {
+        backToStartButton.addEventListener('click', returnToStartScreen);
+    }
 
-    canvas.addEventListener('click', handleCanvasClick);
-    canvas.addEventListener('mousemove', event => screenView.handleCanvasMouseMove(event, getScreenState()));
-    canvas.addEventListener('mouseleave', () => screenView.resetCanvasCursor());
+    if (restartButton) {
+        restartButton.addEventListener('click', restartRoundDirectly);
+    }
 
-    ['resize', 'fullscreenchange', 'webkitfullscreenchange', 'msfullscreenchange']
-        .forEach(type => window.addEventListener(type, handleResize));
+    if (startButton) {
+        startButton.addEventListener('click', launchGame);
+    }
+
+    [
+        'resize',
+        'fullscreenchange',
+        'webkitfullscreenchange',
+        'msfullscreenchange'
+    ].forEach(type => window.addEventListener(type, handleResize));
 
     window.addEventListener('click', handleOutsideMenuClick);
     window.addEventListener('keydown', handleOverlayEscapeKey);
@@ -68,68 +85,99 @@ function init() {
     window.addEventListener('keyup', event => setKeyState(event, false));
 }
 
-function setKeyState(event, pressed) {
-    const key = KEY_BINDINGS[event.keyCode];
-    if (key) keyboard[key] = pressed;
-}
+/**
+ * Mounts the HTML templates into their containers.
+ * @returns {void}
+ */
+function mountTemplates() {
+    const topUiMount = document.getElementById('topUiMount');
+    const startUiMount = document.getElementById('startUiMount');
+    const bottomUiMount = document.getElementById('bottomUiMount');
 
-function resetKeyboardState() {
-    Object.values(KEY_BINDINGS).forEach(key => keyboard[key] = false);
-}
-
-function getScreenState() {
-    return { gameStarted: isGameRunning, gameOver: isGameFinished };
-}
-
-function getSceneAudioName() {
-    if (hasPlayerWon) return 'win';
-    if (lostWithoutBottles) return 'noBottles';
-    return isGameFinished ? 'gameOver' : 'game';
-}
-
-function refreshAudioButtonIcon() {
-    const slash = document.getElementById('audioMuteSlash');
-    if (!slash) return;
-    slash.classList.toggle('hidden-audio-slash', !audioMuted);
-}
-
-function refreshOverlayButtons() {
-    if (topInfoBar) topInfoBar.classList.toggle('hidden-bar', isGameRunning || isGameFinished);
-
-    const gameContainer = document.getElementById('gameContainer');
-    if (canvas && gameContainer) {
-        const canvasRect = canvas.getBoundingClientRect();
-        const containerRect = gameContainer.getBoundingClientRect();
-        const top = canvasRect.top - containerRect.top;
-        const centerX = canvasRect.left - containerRect.left + canvasRect.width / 2;
-
-        [backToStartButton, restartButton].forEach(button => {
-            if (!button) return;
-            button.style.left = `${centerX}px`;
-            button.style.transform = 'translateX(-50%)';
-        });
-
-        if (isGameFinished) {
-            const restartTop = top + canvasRect.height - 118;
-            if (restartButton) restartButton.style.top = `${restartTop}px`;
-            if (backToStartButton) backToStartButton.style.top = `${restartTop + 48}px`;
-        } else {
-            if (backToStartButton) backToStartButton.style.top = `${top + 18}px`;
-            if (restartButton) restartButton.style.top = `${top + 68}px`;
-        }
+    if (topUiMount) {
+        topUiMount.innerHTML = getTopBarTemplate();
     }
 
-    if (backToStartButton) backToStartButton.style.display = isGameFinished ? 'block' : 'none';
-    if (restartButton) restartButton.style.display = isGameFinished ? 'block' : 'none';
+    if (startUiMount) {
+        startUiMount.innerHTML = getStartButtonTemplate();
+    }
+
+    if (bottomUiMount) {
+        bottomUiMount.innerHTML = getBottomButtonsTemplate();
+    }
 }
 
+/**
+ * Sets one keyboard state.
+ * @param {KeyboardEvent} event The keyboard event.
+ * @param {boolean} pressed True if key is pressed.
+ * @returns {void}
+ */
+function setKeyState(event, pressed) {
+    const key = KEY_BINDINGS[event.keyCode];
+    if (key) {
+        keyboard[key] = pressed;
+    }
+}
+
+/**
+ * Resets all keyboard states.
+ * @returns {void}
+ */
+function resetKeyboardState() {
+    Object.values(KEY_BINDINGS).forEach(key => {
+        keyboard[key] = false;
+    });
+}
+
+/**
+ * Updates start screen and overlay visibility.
+ * @returns {void}
+ */
+function refreshOverlayButtons() {
+    if (topInfoBar) {
+        topInfoBar.classList.remove('hidden-bar');
+    }
+
+    const startScreenUi = document.getElementById('startScreenUi');
+    const desktopBottomActions = document.getElementById('desktopBottomActions');
+
+    if (startScreenUi) {
+        startScreenUi.style.display = !isGameRunning && !isGameFinished ? 'flex' : 'none';
+    }
+
+    if (desktopBottomActions) {
+        desktopBottomActions.style.display = !isGameRunning && !isGameFinished ? 'flex' : 'none';
+    }
+
+    if (backToStartButton) {
+        backToStartButton.style.display = 'none';
+    }
+
+    if (restartButton) {
+        restartButton.style.display = 'none';
+    }
+}
+
+/**
+ * Stops the current world safely.
+ * @returns {void}
+ */
 function stopActiveWorld() {
     if (!world) return;
-    if (gameAudio) gameAudio.stopGameplaySounds();
+
+    if (gameAudio) {
+        gameAudio.stopGameplaySounds();
+    }
+
     world.gameOver = true;
     world = null;
 }
 
+/**
+ * Resets internal game state flags.
+ * @returns {void}
+ */
 function resetGameFlags() {
     isGameRunning = false;
     isGameFinished = false;
@@ -137,31 +185,44 @@ function resetGameFlags() {
     lostWithoutBottles = false;
 }
 
+/**
+ * Returns from the current state to the start screen.
+ * @returns {void}
+ */
 function returnToStartScreen() {
     resetGameFlags();
     closeAllPanels();
     stopActiveWorld();
     resetKeyboardState();
 
-    if (gameAudio) gameAudio.stopTracks(['game', 'gameOver', 'win', 'noBottles']);
-    if (ctx && canvas) ctx.clearRect(0, 0, canvas.width, canvas.height);
+    if (gameAudio) {
+        gameAudio.stopTracks(['game', 'gameOver', 'win', 'noBottles']);
+    }
+
+    if (ctx && canvas) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
 
     renderStartView();
 }
 
-function handleCanvasClick(event) {
-    screenView.handleCanvasClick(event, getScreenState(), {
-        startGame: launchGame
-    });
-}
-
+/**
+ * Handles resize and fullscreen changes.
+ * @returns {void}
+ */
 function handleResize() {
-    screenView.updateIconPositions();
-    mobileControls.checkOrientation();
+    if (mobileControls) {
+        mobileControls.checkOrientation();
+    }
+
     refreshOverlayButtons();
     closeInfoMenu();
 }
 
+/**
+ * Starts a new round.
+ * @returns {void}
+ */
 function launchGame() {
     isGameRunning = true;
     isGameFinished = false;
@@ -173,7 +234,10 @@ function launchGame() {
     resetKeyboardState();
 
     world = new World(canvas, keyboard, gameAudio);
-    mobileControls.checkOrientation();
+
+    if (mobileControls) {
+        mobileControls.checkOrientation();
+    }
 
     if (gameAudio) {
         gameAudio.stopTracks(['gameOver', 'win', 'noBottles']);
@@ -183,125 +247,237 @@ function launchGame() {
     refreshOverlayButtons();
 }
 
+/**
+ * Restarts the game directly.
+ * @returns {void}
+ */
 function restartRoundDirectly() {
     stopActiveWorld();
     resetKeyboardState();
     launchGame();
 }
 
+/**
+ * Renders the start screen.
+ * @returns {void}
+ */
 function renderStartView() {
     resetGameFlags();
     refreshOverlayButtons();
     screenView.showStartScreen(audioMuted);
-    refreshAudioButtonIcon();
 }
 
+/**
+ * Toggles audio mode.
+ * @returns {void}
+ */
 function switchAudioMode() {
     if (!gameAudio) return;
 
     audioMuted = gameAudio.toggleMute();
 
-    if (audioMuted) {
-        gameAudio.pauseAll();
-        gameAudio.stopGameplaySounds();
-        gameAudio.stopTracks(['game', 'gameOver', 'win', 'noBottles']);
-    } else {
-        gameAudio.playScene(getSceneAudioName());
+    const audioSlash = document.getElementById('audioMuteSlash');
+    const mobileAudioSlash = document.getElementById('mobileAudioMuteSlash');
+
+    if (audioSlash) {
+        audioSlash.classList.toggle('hidden-audio-slash', !audioMuted);
     }
 
-    refreshAudioButtonIcon();
+    if (mobileAudioSlash) {
+        mobileAudioSlash.classList.toggle('hidden-audio-slash', !audioMuted);
+    }
 }
 
+/**
+ * Opens an overlay.
+ * @param {string} id The overlay id.
+ * @returns {void}
+ */
 function openOverlay(id) {
     const overlay = document.getElementById(id);
     closeInfoMenu();
+
     if (!overlay) return;
+
     overlay.classList.remove('hidden-layer');
     document.body.classList.add('overlay-open');
 }
 
+/**
+ * Closes an overlay.
+ * @param {string} id The overlay id.
+ * @returns {void}
+ */
 function closeOverlay(id) {
     const overlay = document.getElementById(id);
-    if (overlay) overlay.classList.add('hidden-layer');
+    if (overlay) {
+        overlay.classList.add('hidden-layer');
+    }
     refreshBodyOverlayState();
 }
 
+/**
+ * Toggles the mobile info menu.
+ * @returns {void}
+ */
 function toggleInfoMenu() {
     const menu = document.getElementById('mobileInfoMenu');
-    if (menu) menu.classList.toggle('hidden-layer');
+    if (menu) {
+        menu.classList.toggle('hidden-layer');
+    }
 }
 
+/**
+ * Closes the mobile info menu.
+ * @returns {void}
+ */
 function closeInfoMenu() {
     const menu = document.getElementById('mobileInfoMenu');
-    if (menu) menu.classList.add('hidden-layer');
+    if (menu) {
+        menu.classList.add('hidden-layer');
+    }
 }
 
-function openLegalOverlay() { openOverlay('legalOverlay'); }
-function closeLegalOverlay() { closeOverlay('legalOverlay'); }
-function openGuideOverlay() { openOverlay('guideOverlay'); }
-function closeGuideOverlay() { closeOverlay('guideOverlay'); }
-function openLegalOverlayFromMenu() { closeInfoMenu(); openLegalOverlay(); }
-function openGuideOverlayFromMenu() { closeInfoMenu(); openGuideOverlay(); }
+/**
+ * Opens the legal overlay.
+ * @returns {void}
+ */
+function openLegalOverlay() {
+    openOverlay('legalOverlay');
+}
 
+/**
+ * Closes the legal overlay.
+ * @returns {void}
+ */
+function closeLegalOverlay() {
+    closeOverlay('legalOverlay');
+}
+
+/**
+ * Opens the guide overlay.
+ * @returns {void}
+ */
+function openGuideOverlay() {
+    openOverlay('guideOverlay');
+}
+
+/**
+ * Closes the guide overlay.
+ * @returns {void}
+ */
+function closeGuideOverlay() {
+    closeOverlay('guideOverlay');
+}
+
+/**
+ * Opens the legal overlay from mobile menu.
+ * @returns {void}
+ */
+function openLegalOverlayFromMenu() {
+    closeInfoMenu();
+    openLegalOverlay();
+}
+
+/**
+ * Opens the guide overlay from mobile menu.
+ * @returns {void}
+ */
+function openGuideOverlayFromMenu() {
+    closeInfoMenu();
+    openGuideOverlay();
+}
+
+/**
+ * Closes the mobile menu when clicking outside.
+ * @param {MouseEvent} event The click event.
+ * @returns {void}
+ */
 function handleOutsideMenuClick(event) {
     const menuWrap = document.querySelector('.mobile-menu-wrap');
-    if (menuWrap && !menuWrap.contains(event.target)) closeInfoMenu();
+    if (menuWrap && !menuWrap.contains(event.target)) {
+        closeInfoMenu();
+    }
 }
 
+/**
+ * Handles Escape for overlays.
+ * @param {KeyboardEvent} event The key event.
+ * @returns {void}
+ */
 function handleOverlayEscapeKey(event) {
-    if (event.key === 'Escape') closeAllPanels();
+    if (event.key === 'Escape') {
+        closeAllPanels();
+    }
 }
 
+/**
+ * Closes all open panels.
+ * @returns {void}
+ */
 function closeAllPanels() {
     closeOverlay('legalOverlay');
     closeOverlay('guideOverlay');
     closeInfoMenu();
 }
 
+/**
+ * Refreshes body overlay class depending on open overlays.
+ * @returns {void}
+ */
 function refreshBodyOverlayState() {
     const open = ['legalOverlay', 'guideOverlay'].some(id => {
         const overlay = document.getElementById(id);
         return overlay && !overlay.classList.contains('hidden-layer');
     });
+
     document.body.classList.toggle('overlay-open', open);
 }
 
-function showWinScreen() { finishGame('win', './assets/img/You won, you lost/You Win A.png'); }
-function showGameOverScreen() { finishGame('gameOver', './assets/img/You won, you lost/Game Over.png'); }
-function showNoBottlesScreen() { finishGame('noBottles', './assets/img/You won, you lost/You lost.png'); }
+/**
+ * Shows the win screen.
+ * @returns {void}
+ */
+function showWinScreen() {
+    finishGame('./assets/img/You won, you lost/You Win A.png');
+}
 
-function finishGame(scene, imagePath) {
+/**
+ * Shows the standard game over screen.
+ * @returns {void}
+ */
+function showGameOverScreen() {
+    finishGame('./assets/img/You won, you lost/Game Over.png');
+}
+
+/**
+ * Shows the no-bottles result screen.
+ * @returns {void}
+ */
+function showNoBottlesScreen() {
+    finishGame('./assets/img/You won, you lost/You lost.png');
+}
+
+/**
+ * Finishes the game and shows a result image.
+ * @param {string} imagePath The result image path.
+ * @returns {void}
+ */
+function finishGame(imagePath) {
     isGameRunning = false;
     isGameFinished = true;
-    hasPlayerWon = scene === 'win';
-    lostWithoutBottles = scene === 'noBottles';
 
     resetKeyboardState();
-    if (world) world.gameOver = true;
+
+    if (world) {
+        world.gameOver = true;
+    }
 
     if (gameAudio) {
         gameAudio.stopGameplaySounds();
         gameAudio.stopTrack('game', false);
-
-        const actions = {
-            win: () => {
-                gameAudio.stopTracks(['gameOver', 'noBottles']);
-                gameAudio.playWin();
-            },
-            noBottles: () => {
-                gameAudio.stopTracks(['gameOver', 'win']);
-                gameAudio.playNoBottles();
-            },
-            gameOver: () => {
-                gameAudio.stopTracks(['noBottles', 'win']);
-                gameAudio.playGameOver();
-            }
-        };
-
-        actions[scene]?.();
     }
 
     refreshOverlayButtons();
     screenView.showResultScreen(imagePath, audioMuted);
-    refreshAudioButtonIcon();
 }

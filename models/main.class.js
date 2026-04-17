@@ -48,11 +48,7 @@ class GameScreen {
      * @returns {void}
      */
     handleCanvasClick(event, state, callbacks) {
-        const p = this.getCanvasClickPosition(event);
-
-        if (this.canStartGame(state, p)) {
-            callbacks.startGame();
-        }
+        return;
     }
 
     /**
@@ -62,8 +58,7 @@ class GameScreen {
      * @returns {void}
      */
     handleCanvasMouseMove(event, state) {
-        const p = this.getCanvasClickPosition(event);
-        this.canvas.style.cursor = this.canStartGame(state, p) ? 'pointer' : 'default';
+        this.canvas.style.cursor = 'default';
     }
 
     /**
@@ -81,7 +76,7 @@ class GameScreen {
      * @returns {boolean}
      */
     canStartGame(state, p) {
-        return !state.gameStarted && !state.gameOver && this.isInsideRect(p, this.playButtonArea);
+        return false;
     }
 
     /**
@@ -123,7 +118,6 @@ class GameScreen {
         this.updateStartButtonPosition();
 
         this.renderImageScreen('./assets/img/9_intro_outro_screens/start/startscreen_1.png', () => {
-            this.drawStartButton();
             if (typeof onLoaded === 'function') onLoaded();
         });
     }
@@ -202,16 +196,7 @@ class GameScreen {
      * @returns {void}
      */
     drawStartButton() {
-        const b = this.playButtonArea;
-
-        this.ctx.fillStyle = 'rgba(198, 112, 104, 0.88)';
-        this.drawRoundedRect(b.x, b.y, b.width, b.height, 8);
-
-        this.ctx.fillStyle = '#fff8f2';
-        this.ctx.font = '18px Arial';
-        this.ctx.textAlign = 'center';
-        this.ctx.textBaseline = 'middle';
-        this.ctx.fillText('Start', b.x + b.width / 2, b.y + b.height / 2);
+        return;
     }
 
     /**
