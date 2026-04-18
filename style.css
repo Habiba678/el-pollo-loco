@@ -5,7 +5,7 @@ body {
     min-height: 100vh;
     margin: 0;
     padding: 0;
-    background-image: url("./assets/img/5_background/mostafaelturkey36-oasis-4701493.jpg");
+    background-image: url("./assets/img/5_background/background.png");
     background-repeat: no-repeat;
     background-size: cover;
     background-position: center;
@@ -512,7 +512,7 @@ body.touch-device .mobile-controls {
     }
 
     .top-bar {
-        top: 16px;
+        top: 30px;
         left: auto;
         right: 16px;
         transform: none;
@@ -522,6 +522,11 @@ body.touch-device .mobile-controls {
         border: none;
         justify-content: flex-end;
         width: auto;
+    }
+
+    body.game-running-mode .top-bar,
+    body.game-over-mode .top-bar {
+        top: 80px;
     }
 
     .start-screen-ui {

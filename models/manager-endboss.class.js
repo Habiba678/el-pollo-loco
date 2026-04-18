@@ -27,10 +27,7 @@ class EndbossManager {
      */
     update() {
         const boss = this.endboss;
-
-        if (!boss || boss.isDead() || !boss.world) {
-            return;
-        }
+        if (!boss || boss.isDead() || !boss.world || this.world.gameOver) return;
 
         const character = this.world.character;
         const distance = Math.abs(boss.x - character.x);
@@ -39,11 +36,13 @@ class EndbossManager {
             boss.isActive = true;
         }
 
-        if (!boss.isActive || this.hitPauseActive) {
-            return;
-        }
+        if (!boss.isActive || this.hitPauseActive) return;
 
         boss.moveTowardCharacter(character.x);
+
+        if (distance < 220 && !boss.isJumpAttacking) {
+            this.triggerJumpAttack();
+        }
     }
 
     /**
@@ -52,10 +51,7 @@ class EndbossManager {
      */
     triggerJumpAttack() {
         const boss = this.endboss;
-
-        if (!boss || boss.isDead() || boss.isJumpAttacking || this.jumpCooldown) {
-            return;
-        }
+        if (!boss || boss.isDead() || boss.isJumpAttacking || this.jumpCooldown) return;
 
         this.jumpCooldown = true;
         boss.triggerJumpAttack();
@@ -71,10 +67,7 @@ class EndbossManager {
      */
     handleBossHit() {
         const boss = this.endboss;
-
-        if (!boss || boss.isDead()) {
-            return;
-        }
+        if (!boss || boss.isDead() || this.world.gameOver) return;
 
         boss.hit();
         this.world.statusBarEndboss.setPercentage(boss.lifePoints);
@@ -91,15 +84,15 @@ class EndbossManager {
             this.triggerJumpAttack();
         }
 
-        if (boss.isDead()) {
-            this.world.gameOver = true;
+        if (!boss.isDead()) return;
 
-            setTimeout(() => {
-                if (typeof showWinScreen === 'function') {
-                    showWinScreen();
-                }
-            }, 500);
-        }
+        this.world.gameOver = true;
+
+        setTimeout(() => {
+            if (typeof showWinScreen === 'function') {
+                showWinScreen();
+            }
+        }, 500);
     }
 
     /**
@@ -108,31 +101,24 @@ class EndbossManager {
      */
     handleBossCollision() {
         const boss = this.endboss;
-
-        if (!boss || boss.isDead()) {
-            return;
-        }
+        if (!boss || boss.isDead() || this.world.gameOver) return;
 
         const character = this.world.character;
-
-        if (!character.isColliding(boss)) {
-            return;
-        }
-
-        if (character.isHurt() || this.hitPauseActive) {
-            return;
-        }
+        if (!character.isColliding(boss)) return;
+        if (character.isHurt() || this.hitPauseActive) return;
 
         character.hit();
         this.world.statusBarHealth.setPercentage(character.energy);
 
+        const pushDistance = boss.otherDirection ? -60 : 60;
         const maxCharacterX = boss.x - character.width - 10;
-        if (character.x > maxCharacterX) {
+
+        if (character.x > maxCharacterX && !boss.otherDirection) {
             character.x = maxCharacterX;
         }
 
         this.hitPauseActive = true;
-        character.startKnockback(140, 28, 12);
+        character.startKnockback(pushDistance, 18, 10);
 
         if (this.world.gameAudio) {
             this.world.gameAudio.playCharacterHit();
@@ -140,6 +126,6 @@ class EndbossManager {
 
         setTimeout(() => {
             this.hitPauseActive = false;
-        }, 350);
+        }, 450);
     }
 }

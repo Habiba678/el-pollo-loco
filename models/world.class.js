@@ -106,9 +106,15 @@ class World {
             return;
         }
 
+        const throwX = this.character.otherDirection
+            ? this.character.x + 20
+            : this.character.x + 70;
+
+        const throwY = this.character.y + 140;
+
         const bottle = new ThrowableObject(
-            this.character.x + 100,
-            this.character.y + 100,
+            throwX,
+            throwY,
             this.character.otherDirection,
             () => this.gameAudio && this.gameAudio.playBottleBreak()
         );
