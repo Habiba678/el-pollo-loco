@@ -12,7 +12,7 @@ class MobilScreen {
         this.inputState = keyboard;
         this.resetInputState = onResetKeyboard;
     }
-  
+
     /**
      * Starts the mobile setup.
      *
@@ -21,16 +21,49 @@ class MobilScreen {
     init() {
         const touchMode = this.isTouchDevice();
         document.body.classList.toggle("touch-device", touchMode);
-  
+
+        this.bindFullscreenState();
+
         if (!touchMode) {
             return;
         }
-  
+
         this.connectControlButtons();
         window.addEventListener("blur", this.resetInputState);
         window.addEventListener("orientationchange", () => this.checkOrientation());
     }
-  
+
+    /**
+     * Keeps CSS fullscreen class in sync.
+     *
+     * @returns {void}
+     */
+    bindFullscreenState() {
+        ["fullscreenchange", "webkitfullscreenchange", "msfullscreenchange"].forEach((eventName) => {
+            document.addEventListener(eventName, () => this.updateFullscreenClass());
+        });
+    }
+
+    /**
+     * Updates the fullscreen helper class.
+     *
+     * @returns {void}
+     */
+    updateFullscreenClass() {
+        const gameWrapper = document.getElementById("gameContainer");
+        const isFullscreen =
+            document.fullscreenElement ||
+            document.webkitFullscreenElement ||
+            document.msFullscreenElement;
+
+        if (!gameWrapper) {
+            return;
+        }
+
+        gameWrapper.classList.toggle("is-fullscreen", !!isFullscreen);
+        document.body.classList.toggle("is-fullscreen", !!isFullscreen);
+    }
+
     /**
      * Connects all mobile buttons.
      *
@@ -42,7 +75,7 @@ class MobilScreen {
         this.connectSingleButton("btn-jump", "SPACE");
         this.connectSingleButton("btn-throw", "D");
     }
-  
+
     /**
      * Connects one button to one input key.
      *
@@ -52,18 +85,18 @@ class MobilScreen {
      */
     connectSingleButton(buttonId, key) {
         const targetButton = document.getElementById(buttonId);
-  
+
         if (!targetButton) {
             return;
         }
-  
+
         const { pressStart, pressEnd, suppressDefault } = this.createInputHandlers(key);
         const applyEvents = window.PointerEvent ? this.attachPointerEvents : this.attachFallbackEvents;
-  
+
         applyEvents.call(this, targetButton, pressStart, pressEnd);
         this.attachBlockEvents(targetButton, suppressDefault);
     }
-  
+
     /**
      * Creates the handlers for one input key.
      *
@@ -75,17 +108,17 @@ class MobilScreen {
             event.preventDefault();
             this.inputState[key] = true;
         };
-  
+
         const pressEnd = (event) => {
             event.preventDefault();
             this.inputState[key] = false;
         };
-  
+
         const suppressDefault = (event) => event.preventDefault();
-  
+
         return { pressStart, pressEnd, suppressDefault };
     }
-  
+
     /**
      * Uses pointer events on modern devices.
      *
@@ -100,7 +133,7 @@ class MobilScreen {
         button.addEventListener("pointercancel", pressEnd);
         button.addEventListener("pointerleave", pressEnd);
     }
-  
+
     /**
      * Uses touch and mouse events as fallback.
      *
@@ -117,7 +150,7 @@ class MobilScreen {
         button.addEventListener("mouseup", pressEnd);
         button.addEventListener("mouseleave", pressEnd);
     }
-  
+
     /**
      * Blocks default browser actions on buttons.
      *
@@ -130,7 +163,7 @@ class MobilScreen {
         button.addEventListener("selectstart", suppressDefault);
         button.addEventListener("dragstart", suppressDefault);
     }
-  
+
     /**
      * Shows or hides the rotate overlay.
      *
@@ -140,14 +173,14 @@ class MobilScreen {
         const overlayElement = document.getElementById("orientationOverlay");
         const touchMode = this.isTouchDevice();
         const landscapeMode = window.matchMedia("(orientation: landscape)").matches;
-  
+
         if (!overlayElement) {
             return;
         }
-  
+
         overlayElement.style.display = touchMode && !landscapeMode ? "flex" : "none";
     }
-  
+
     /**
      * Checks if the device uses touch input.
      *
@@ -156,45 +189,40 @@ class MobilScreen {
     isTouchDevice() {
         return true;
     }
-  
+
     /**
-     * Switches fullscreen mode.
+     * Switches fullscreen mode on or off.
      *
      * @returns {void}
      */
     toggleFullscreen() {
-        if (!document.fullscreenElement) {
-            this.openFullscreen();
+        const gameWrapper = document.getElementById("gameContainer");
+        const isFullscreen =
+            document.fullscreenElement ||
+            document.webkitFullscreenElement ||
+            document.msFullscreenElement;
+
+        if (isFullscreen) {
+            this.closeFullscreen();
             return;
         }
-  
-        if (document.exitFullscreen) {
-            document.exitFullscreen();
-        } else if (document.webkitExitFullscreen) {
-            document.webkitExitFullscreen();
-        } else if (document.msExitFullscreen) {
-            document.msExitFullscreen();
-        }
+
+        this.openFullscreen(gameWrapper);
     }
-  
+
     /**
      * Opens fullscreen for the game container.
      *
+     * @param {HTMLElement|null} gameWrapper The game container.
      * @returns {void}
      */
-    openFullscreen() {
-        const gameWrapper = document.getElementById("gameContainer");
-  
+    openFullscreen(gameWrapper) {
         if (!gameWrapper) {
             return;
         }
-  
-        if (document.fullscreenElement) {
-            return;
-        }
-  
-        let fullscreenRequest;
-  
+
+        let fullscreenRequest = null;
+
         if (gameWrapper.requestFullscreen) {
             fullscreenRequest = gameWrapper.requestFullscreen();
         } else if (gameWrapper.webkitRequestFullscreen) {
@@ -202,9 +230,30 @@ class MobilScreen {
         } else if (gameWrapper.msRequestFullscreen) {
             fullscreenRequest = gameWrapper.msRequestFullscreen();
         }
-  
+
         if (fullscreenRequest && typeof fullscreenRequest.catch === "function") {
             fullscreenRequest.catch(() => {});
         }
     }
-  }
+
+    /**
+     * Closes fullscreen mode.
+     *
+     * @returns {void}
+     */
+    closeFullscreen() {
+        let exitRequest = null;
+
+        if (document.exitFullscreen) {
+            exitRequest = document.exitFullscreen();
+        } else if (document.webkitExitFullscreen) {
+            exitRequest = document.webkitExitFullscreen();
+        } else if (document.msExitFullscreen) {
+            exitRequest = document.msExitFullscreen();
+        }
+
+        if (exitRequest && typeof exitRequest.catch === "function") {
+            exitRequest.catch(() => {});
+        }
+    }
+}

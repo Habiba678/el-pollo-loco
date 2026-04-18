@@ -16,6 +16,10 @@ body.overlay-open {
     overflow: hidden;
 }
 
+body.is-fullscreen {
+    background: #000000;
+}
+
 button {
     cursor: pointer;
 }
@@ -512,7 +516,7 @@ body.touch-device .mobile-controls {
     }
 
     .top-bar {
-        top: 30px;
+        top: 20px;
         left: auto;
         right: 16px;
         transform: none;
@@ -526,7 +530,7 @@ body.touch-device .mobile-controls {
 
     body.game-running-mode .top-bar,
     body.game-over-mode .top-bar {
-        top: 80px;
+        top: 70px;
     }
 
     .start-screen-ui {
@@ -624,4 +628,31 @@ body.touch-device .mobile-controls {
     .mobile-top-btn {
         display: flex;
     }
+}
+
+.game-container.is-fullscreen {
+    width: 100vw;
+    max-width: none;
+    height: 100vh;
+    padding-bottom: 0;
+}
+
+.game-container.is-fullscreen canvas {
+    width: 100vw;
+    max-width: none;
+    height: 100vh;
+    aspect-ratio: auto;
+    border-radius: 0;
+}
+
+.game-container.is-fullscreen .top-bar {
+    top: 20px;
+}
+
+.game-container.is-fullscreen .desktop-bottom-actions {
+    display: none !important;
+}
+
+.game-container.is-fullscreen .start-screen-ui {
+    bottom: 55px;
 }
