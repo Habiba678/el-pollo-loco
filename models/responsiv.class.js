@@ -23,6 +23,8 @@ class MobilScreen {
         document.body.classList.toggle("touch-device", touchMode);
 
         this.bindFullscreenState();
+        this.updateFullscreenClass();
+        this.checkOrientation();
 
         if (!touchMode) {
             return;
@@ -30,6 +32,7 @@ class MobilScreen {
 
         this.connectControlButtons();
         window.addEventListener("blur", this.resetInputState);
+        window.addEventListener("resize", () => this.checkOrientation());
         window.addEventListener("orientationchange", () => this.checkOrientation());
     }
 
@@ -84,7 +87,7 @@ class MobilScreen {
      * @returns {void}
      */
     connectSingleButton(buttonId, key) {
-        const targetButton = document.getElementById(buttonId);
+        const targetButton = document.getElementById("btn-" + buttonId.replace("btn-", "")) || document.getElementById(buttonId);
 
         if (!targetButton) {
             return;
@@ -187,7 +190,10 @@ class MobilScreen {
      * @returns {boolean}
      */
     isTouchDevice() {
-        return true;
+        return (
+            "ontouchstart" in window ||
+            navigator.maxTouchPoints > 0
+        );
     }
 
     /**

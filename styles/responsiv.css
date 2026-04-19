@@ -1,0 +1,277 @@
+@media only screen and (max-width: 900px) {
+    .game-container {
+        width: 100%;
+        max-width: 720px;
+        padding-left: 12px;
+        padding-right: 12px;
+        box-sizing: border-box;
+    }
+
+    canvas {
+        width: 100%;
+        max-width: 100%;
+        height: auto;
+        aspect-ratio: 720 / 480;
+    }
+}
+
+@media only screen and (max-width: 680px) {
+    .game-container {
+        padding-bottom: 140px;
+    }
+
+    .top-bar {
+        top: 14px;
+        left: 50%;
+        right: auto;
+        transform: translateX(-50%);
+        padding: 6px 8px;
+        border-radius: 12px;
+    }
+
+    .top-icon-btn {
+        width: 42px;
+        height: 36px;
+    }
+
+    .top-icon-btn img {
+        width: 22px;
+        height: 22px;
+    }
+
+    .back-icon-btn {
+        font-size: 22px;
+    }
+
+    .start-screen-ui {
+        bottom: 86px;
+        width: 100%;
+        padding: 0 12px;
+        box-sizing: border-box;
+    }
+
+    .start-screen-btn {
+        min-width: 0;
+        width: 100%;
+        max-width: 220px;
+        height: 40px;
+        font-size: 18px;
+        margin: 0 auto;
+    }
+
+    .desktop-bottom-actions {
+        bottom: 18px;
+        width: 100%;
+        padding: 0 12px;
+        box-sizing: border-box;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .bottom-action-btn {
+        min-width: 0;
+        width: 100%;
+        max-width: 220px;
+        height: 40px;
+        font-size: 18px;
+        margin: 0 auto;
+    }
+}
+
+@media only screen and (max-width: 420px) {
+    .game-container {
+        padding-bottom: 132px;
+    }
+
+    .top-bar {
+        top: 10px;
+        padding: 5px 6px;
+        border-radius: 10px;
+    }
+
+    .top-icon-btn {
+        width: 38px;
+        height: 34px;
+    }
+
+    .top-icon-btn img {
+        width: 20px;
+        height: 20px;
+    }
+
+    .start-screen-ui {
+        bottom: 82px;
+    }
+
+    .start-screen-btn {
+        max-width: 190px;
+        height: 38px;
+        font-size: 17px;
+    }
+
+    .desktop-bottom-actions {
+        bottom: 14px;
+        gap: 8px;
+    }
+
+    .bottom-action-btn {
+        max-width: 190px;
+        height: 38px;
+        font-size: 17px;
+    }
+}
+
+@media only screen and (pointer: coarse) {
+    body {
+        padding: 0;
+        overflow: hidden;
+    }
+
+    .game-container {
+        position: relative;
+        width: 100vw;
+        max-width: 720px;
+        height: auto;
+        padding: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        box-sizing: border-box;
+    }
+
+    canvas {
+        width: 100%;
+        height: auto;
+        aspect-ratio: 720 / 480;
+        max-width: 720px;
+        display: block;
+    }
+
+    .desktop-only {
+        display: none;
+    }
+
+    .mobile-only,
+    .mobile-menu-wrap {
+        display: flex;
+    }
+
+    .top-bar {
+        top: 20px;
+        left: auto;
+        right: 16px;
+        transform: none;
+        padding: 0;
+        background: transparent;
+        box-shadow: none;
+        border: none;
+        justify-content: flex-end;
+        width: auto;
+    }
+
+    body.game-running-mode .top-bar,
+    body.game-over-mode .top-bar {
+        top: 70px;
+    }
+
+    .start-screen-ui {
+        bottom: 20px;
+    }
+
+    .desktop-bottom-actions {
+        display: none !important;
+    }
+
+    body.touch-device .mobile-controls {
+        display: flex !important;
+    }
+
+    .mobile-controls {
+        display: flex;
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 12px;
+        width: 100%;
+        max-width: none;
+        padding: 0 14px;
+        box-sizing: border-box;
+        justify-content: space-between;
+        align-items: center;
+        z-index: 60;
+        pointer-events: none;
+    }
+
+    .mobile-controls-group,
+    .mobile-controls-left,
+    .mobile-controls-right {
+        display: flex;
+        flex-direction: row;
+        gap: 14px;
+        align-items: center;
+        pointer-events: auto;
+    }
+
+    .mobile-controls-left,
+    .mobile-controls-right {
+        position: static;
+    }
+
+    .mobile-btn {
+        width: 46px;
+        height: 46px;
+        border-radius: 50%;
+        border: none;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: #f1cd4f;
+        color: #1f1f1f;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.18);
+        padding: 0;
+        pointer-events: auto;
+    }
+
+    .mobile-btn:hover {
+        background: #f1cd4f;
+        transform: none;
+    }
+
+    .mobile-btn-icon {
+        color: #1f1f1f;
+        font-weight: 700;
+    }
+
+    .mobile-btn-arrow .mobile-btn-icon,
+    .mobile-btn-action .mobile-btn-icon {
+        font-size: 22px;
+    }
+
+    .mobile-info-menu {
+        top: 44px;
+    }
+
+    .overlay-panel {
+        width: 94vw;
+        max-height: 78vh;
+        padding: 22px 18px 18px;
+    }
+
+    .overlay-title {
+        font-size: 24px;
+    }
+
+    .overlay-section h3 {
+        font-size: 18px;
+    }
+
+    .overlay-section p,
+    .overlay-section li {
+        font-size: 15px;
+    }
+
+    .mobile-top-btn {
+        display: flex;
+    }
+}

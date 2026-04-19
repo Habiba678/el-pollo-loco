@@ -133,7 +133,9 @@ function resetKeyboardState() {
 function stopActiveWorld() {
     if (!world) return;
 
-    if (gameAudio) gameAudio.stopGameplaySounds();
+    if (gameAudio) {
+        gameAudio.stopGameplaySounds();
+    }
 
     world.gameOver = true;
     world = null;
@@ -155,13 +157,14 @@ function resetGameFlags() {
  * @returns {void}
  */
 function returnToStartScreen() {
-    resetGameFlags();
-    closeAllPanels();
     stopActiveWorld();
     resetKeyboardState();
+    closeAllPanels();
+    resetGameFlags();
 
     if (gameAudio) {
         gameAudio.stopTracks(['game', 'gameOver', 'win', 'noBottles']);
+        gameAudio.stopGameplaySounds();
     }
 
     if (ctx && canvas) {
@@ -186,18 +189,20 @@ function handleResize() {
  * @returns {void}
  */
 function launchGame() {
+    stopActiveWorld();
+    resetKeyboardState();
+    closeAllPanels();
+
     isGameRunning = true;
     isGameFinished = false;
     hasPlayerWon = false;
     lostWithoutBottles = false;
 
-    closeAllPanels();
-    stopActiveWorld();
-    resetKeyboardState();
-
     world = new World(canvas, keyboard, gameAudio);
 
-    if (mobileControls) mobileControls.checkOrientation();
+    if (mobileControls) {
+        mobileControls.checkOrientation();
+    }
 
     if (gameAudio) {
         gameAudio.stopTracks(['gameOver', 'win', 'noBottles']);
@@ -212,8 +217,6 @@ function launchGame() {
  * @returns {void}
  */
 function restartRoundDirectly() {
-    stopActiveWorld();
-    resetKeyboardState();
     launchGame();
 }
 

@@ -3,7 +3,7 @@
  */
 class World {
     character = new Character();
-    level = level1;
+    level = createLevel1();
     canvas;
     ctx;
     keyboard;
@@ -47,6 +47,8 @@ class World {
      * @param {SoundManager} gameAudio The sound manager.
      */
     constructor(canvas, keyboard, gameAudio) {
+        this.character = new Character();
+        this.level = createLevel1();
         this.ctx = canvas.getContext('2d');
         this.canvas = canvas;
         this.keyboard = keyboard;

@@ -68,7 +68,7 @@ class Character extends MovableObject {
     ];
 
     world;
-    moveSound = new Audio('audio/running.mp3');
+    moveSound = new Audio('./assets/audio/running.mp3');
     stillTimer = 0;
     airFramePointer = 0;
     airSequenceOpen = false;
@@ -79,6 +79,7 @@ class Character extends MovableObject {
     /** Creates the character and loads sprites. */
     constructor() {
         super().loadImage('./assets/img/2_character_pepe/1_idle/idle/I-1.png');
+        this.moveSound.volume = 0.2;
         this.loadAllImages();
         this.applyGravity();
         this.animation();
@@ -106,7 +107,7 @@ class Character extends MovableObject {
     /** Updates movement and camera. */
     updateMovement() {
         if (!this.canUpdate()) return;
-        this.moveSound.pause();
+        this.stopMoveSound();
         this.processSideInput();
         this.processJumpInput();
         this.world.camera_x = -this.x + 100;
@@ -129,7 +130,7 @@ class Character extends MovableObject {
         if (!this.world.keyboard.RIGHT || this.x >= this.world.level.level_end_x) return;
         this.moveRight();
         this.otherDirection = false;
-        this.moveSound.play();
+        this.playMoveSound();
         this.resetStillTimer();
     }
 
@@ -138,7 +139,7 @@ class Character extends MovableObject {
         if (!this.world.keyboard.LEFT || this.x <= 0) return;
         this.moveLeft();
         this.otherDirection = true;
-        this.moveSound.play();
+        this.playMoveSound();
         this.resetStillTimer();
     }
 
@@ -148,6 +149,18 @@ class Character extends MovableObject {
         if (!this.world.keyboard.SPACE || this.isAboveGround()) return;
         this.jump();
         this.resetStillTimer();
+    }
+
+    /** Plays movement sound safely. */
+    playMoveSound() {
+        if (!this.moveSound.paused) return;
+        this.moveSound.play().catch(() => {});
+    }
+
+    /** Stops movement sound safely. */
+    stopMoveSound() {
+        this.moveSound.pause();
+        this.moveSound.currentTime = 0;
     }
 
     /** Updates active animations. */

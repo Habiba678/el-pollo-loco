@@ -74,13 +74,20 @@ function toggleDisplay(id, show, displayValue = 'block') {
 function refreshOverlayButtons() {
     updateScreenModeClass();
 
-    if (topInfoBar) topInfoBar.classList.remove('hidden-bar');
+    if (topInfoBar) {
+        topInfoBar.classList.remove('hidden-bar');
+    }
 
     toggleDisplay('startScreenUi', !isGameRunning && !isGameFinished, 'flex');
     toggleDisplay('desktopBottomActions', !isGameRunning && !isGameFinished, 'flex');
 
-    if (backToStartButton) backToStartButton.style.display = 'none';
-    if (restartButton) restartButton.style.display = 'none';
+    if (backToStartButton) {
+        backToStartButton.style.display = 'none';
+    }
+
+    if (restartButton) {
+        restartButton.style.display = 'none';
+    }
 }
 
 /**
@@ -117,7 +124,9 @@ function openOverlay(id) {
 function closeOverlay(id) {
     const overlay = document.getElementById(id);
 
-    if (overlay) overlay.classList.add('hidden-layer');
+    if (overlay) {
+        overlay.classList.add('hidden-layer');
+    }
 
     refreshBodyOverlayState();
 }

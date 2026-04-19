@@ -22,18 +22,18 @@ class AudioManager {
         if (this.audioPool.game) return;
 
         const tracks = {
-            game: ['./assets/audio/music.mp3', true, 0.06],
-            gameOver: ['./assets/audio/freesound_community_ver-arcade-6435.mp3', false, 0.10],
+            game: ['./assets/audio/game-music.mp3', true, 0.06],
+            gameOver: ['./assets/audio/game-over.mp3', false, 0.10],
             win: ['./assets/audio/win.mp3', false, 0.10],
-            noBottles: ['./assets/audio/freesound_community_ver-arcade-6435.mp3', false, 0.10],
-            run: ['./assets/audio/running.mp3', true, 0.03],
+            noBottles: ['./assets/audio/no-bottles.mp3', false, 0.10],
+            run: ['./assets/audio/run.mp3', true, 0.03],
             jump: ['./assets/audio/jump.mp3', false, 0.06],
-            bottleCollect: ['./assets/audio/bottle.mp3', false, 0.05],
-            coinCollect: ['./assets/audio/bottle.mp3', false, 0.04],
-            bottleBreak: ['./assets/audio/glass.mp3', false, 0.06],
-            enemyKill: ['./assets/audio/chicken.mp3', false, 0.06],
-            characterHit: ['./assets/audio/el_pollo_loco.mp3', false, 0.07],
-            endbossHit: ['./assets/audio/throw.mp3', false, 0.05]
+            bottleCollect: ['./assets/audio/bottle-collect.mp3', false, 0.05],
+            coinCollect: ['./assets/audio/coin-collect.mp3', false, 0.04],
+            bottleBreak: ['./assets/audio/bottle-break.mp3', false, 0.06],
+            enemyKill: ['./assets/audio/enemy-kill.mp3', false, 0.06],
+            characterHit: ['./assets/audio/character-hit.mp3', false, 0.07],
+            endbossHit: ['./assets/audio/endboss-hit.mp3', false, 0.05]
         };
 
         Object.entries(tracks).forEach(([name, [src, loop, volume]]) => {
@@ -67,6 +67,7 @@ class AudioManager {
         } catch (error) {
             console.warn('Unable to read music state from localStorage:', error);
         }
+
         return this.audioMuted;
     }
 
@@ -104,6 +105,11 @@ class AudioManager {
     toggleMute() {
         this.audioMuted = !this.audioMuted;
         this.saveMutedState();
+
+        if (this.audioMuted) {
+            this.pauseAll();
+        }
+
         return this.audioMuted;
     }
 
@@ -144,69 +150,93 @@ class AudioManager {
     stopTrack(name, reset = true) {
         const audio = this.audioPool[name];
         if (!audio) return;
+
         audio.pause();
-        if (reset) audio.currentTime = 0;
+
+        if (reset) {
+            audio.currentTime = 0;
+        }
     }
 
     /**
      * Plays the game music.
      * @returns {void}
      */
-    playGame() { this.playTrack('game', 'Audio playback blocked or failed:', false); }
+    playGame() {
+        this.playTrack('game', 'Audio playback blocked or failed:', false);
+    }
 
     /**
      * Plays the game over music.
      * @returns {void}
      */
-    playGameOver() { this.playTrack('gameOver', 'Game-over audio playback blocked or failed:'); }
+    playGameOver() {
+        this.playTrack('gameOver', 'Game-over audio playback blocked or failed:');
+    }
 
     /**
      * Plays the win music.
      * @returns {void}
      */
-    playWin() { this.playTrack('win', 'Win audio playback blocked or failed:'); }
+    playWin() {
+        this.playTrack('win', 'Win audio playback blocked or failed:');
+    }
 
     /**
      * Plays the no-bottles music.
      * @returns {void}
      */
-    playNoBottles() { this.playTrack('noBottles', 'No-bottles audio playback blocked or failed:'); }
+    playNoBottles() {
+        this.playTrack('noBottles', 'No-bottles audio playback blocked or failed:');
+    }
 
     /**
      * Plays the bottle collect sound.
      * @returns {void}
      */
-    playBottleCollect() { this.playEffectTrack('bottleCollect', 'Bottle collect audio playback blocked or failed:'); }
+    playBottleCollect() {
+        this.playEffectTrack('bottleCollect', 'Bottle collect audio playback blocked or failed:');
+    }
 
     /**
      * Plays the coin collect sound.
      * @returns {void}
      */
-    playCoinCollect() { this.playEffectTrack('coinCollect', 'Coin collect audio playback blocked or failed:'); }
+    playCoinCollect() {
+        this.playEffectTrack('coinCollect', 'Coin collect audio playback blocked or failed:');
+    }
 
     /**
      * Plays the bottle break sound.
      * @returns {void}
      */
-    playBottleBreak() { this.playEffectTrack('bottleBreak', 'Bottle break audio playback blocked or failed:'); }
+    playBottleBreak() {
+        this.playEffectTrack('bottleBreak', 'Bottle break audio playback blocked or failed:');
+    }
 
     /**
      * Plays the enemy kill sound.
      * @returns {void}
      */
-    playEnemyKill() { this.playEffectTrack('enemyKill', 'Enemy kill audio playback blocked or failed:'); }
+    playEnemyKill() {
+        this.playEffectTrack('enemyKill', 'Enemy kill audio playback blocked or failed:');
+    }
 
     /**
      * Plays the character hit sound.
      * @returns {void}
      */
-    playCharacterHit() { this.playEffectTrack('characterHit', 'Character hit audio playback blocked or failed:'); }
+    playCharacterHit() {
+        this.playEffectTrack('characterHit', 'Character hit audio playback blocked or failed:');
+    }
 
     /**
      * Plays the endboss hit sound.
      * @returns {void}
      */
-    playEndbossHit() { this.playEffectTrack('endbossHit', 'Endboss hit audio playback blocked or failed:'); }
+    playEndbossHit() {
+        this.playEffectTrack('endbossHit', 'Endboss hit audio playback blocked or failed:');
+    }
 
     /**
      * Plays one scene sound.
@@ -219,6 +249,7 @@ class AudioManager {
             noBottles: () => this.playNoBottles(),
             gameOver: () => this.playGameOver()
         };
+
         (actions[scene] || (() => this.playGame()))();
     }
 
@@ -233,9 +264,13 @@ class AudioManager {
         const audio = this.audioPool[name];
         if (!audio || this.audioMuted || !this.audioUnlocked) return;
         if (!reset && !audio.paused) return;
-        if (reset) audio.currentTime = 0;
+
+        if (reset) {
+            audio.currentTime = 0;
+        }
 
         const playback = audio.play();
+
         if (playback && typeof playback.catch === 'function') {
             playback.catch(error => this.handlePlayError(warningMessage, error));
         }
@@ -256,9 +291,14 @@ class AudioManager {
         effect.currentTime = 0;
         this.effectInstances.push(effect);
 
-        effect.addEventListener('ended', () => this.removeActiveEffectAudio(effect), { once: true });
+        effect.addEventListener(
+            'ended',
+            () => this.removeActiveEffectAudio(effect),
+            { once: true }
+        );
 
         const playback = effect.play();
+
         if (playback && typeof playback.catch === 'function') {
             playback.catch(error => {
                 this.removeActiveEffectAudio(effect);
@@ -285,6 +325,7 @@ class AudioManager {
             audio.pause();
             audio.currentTime = 0;
         });
+
         this.effectInstances = [];
     }
 
